@@ -8,7 +8,7 @@
 :root{--bg:#0d1117;--card:#151b24;--card2:#0b1016;--border:#293241;--text:#eef2f7;--muted:#9aa6b5;--blue:#7c9cff;--green:#35d07f;--yellow:#ffbd55;--red:#ff6577}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
 .app{max-width:1250px;margin:24px auto;padding:0 16px}.top{display:flex;justify-content:space-between;gap:12px;align-items:end;margin-bottom:18px}.top h1{margin:0;font-size:25px}.top p{margin:5px 0 0;color:var(--muted);font-size:13px}
-.layout{display:grid;grid-template-columns:280px 1fr;gap:16px}.card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:16px}.side{min-height:650px}.sidehead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.sidehead b{font-size:14px}.count{font-size:11px;color:var(--muted)}
+.layout{display:grid;grid-template-columns:280px 1fr;gap:16px}.card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:16px}.side{min-height:650px;max-height:calc(100vh - 48px);overflow:auto}.sidehead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.sidehead b{font-size:14px}.count{font-size:11px;color:var(--muted)}
 .search,input,textarea,select{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px;font:inherit;outline:none}.search{margin-bottom:10px}
 .teamlist{margin-top:12px}.teamrow{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:8px;cursor:pointer;margin:3px 0;color:#cbd4df}.teamrow:hover{background:#101721}.teamrow.active{background:#202a3a;color:#fff}.teamrow .teamname{font-weight:800;font-size:12px}.teamrow .teamcount{font-size:10px;color:var(--muted);margin-left:6px}.teamactions{display:flex;gap:4px}.mini{padding:4px 7px!important;font-size:10px!important;border-radius:6px!important}.profile{padding:11px;border:1px solid transparent;border-radius:9px;cursor:pointer;margin:5px 0}.profile:hover{background:#101721;border-color:var(--border)}.profile.active{background:#202a3a;border-color:#46577a}.profile b{display:block}.profile small{color:var(--muted)}.tag{display:inline-block;margin-top:5px;font-size:10px;padding:2px 6px;border-radius:20px;background:#263149;color:#b9c8ff}.profileline{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.editbtn{opacity:.65}.profile:hover .editbtn{opacity:1}
 label{font-size:12px;font-weight:700;color:#cbd4df;display:block;margin:0 0 6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}
@@ -21,12 +21,13 @@ textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:
 </head>
 <body>
 <div class="app">
- <div class="top"><div><h1>SHADOWING FEEDBACK V9</h1><p>QC history — fiecare chatter are propriul profil și timeline.</p></div></div>
+ <div class="top"><div><h1>SHADOWING FEEDBACK V10</h1><p>QC history — fiecare chatter are propriul profil și timeline.</p></div></div>
  <div class="layout">
   <aside class="card side">
    <div class="sidehead"><b>Chatter History</b><span class="count" id="count">0</span></div>
    <input class="search" id="search" placeholder="Caută chatter sau echipă..." oninput="renderProfiles()">
    <button class="primary" style="width:100%" onclick="newProfile()">+ New Chatter</button>
+   <div class="status" style="margin:7px 0 0">Click <b>＋</b> lângă echipă pentru a adăuga direct un chatter.</div>
    <div class="row" style="margin-top:8px">
     <button class="ghost mini" style="width:100%" onclick="manageTeams()">⚙ Manage Teams</button>
    </div>
@@ -69,30 +70,47 @@ textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:
 </div>
 
 <script>
-const KEY="QC_SHADOWING_V8_DATA";
+const KEY="QC_SHADOWING_V10_DATA";
 const OLD_KEY="QC_SHADOWING_V7_DATA";
 let data=load(), currentId=null, currentTeam="ALL", generated="", generatedCompare="";
 
 function load(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(KEY)||"");
-    if(saved && Array.isArray(saved.profiles)) return normalize(saved);
-  }catch(e){}
-  try{
-    const old=JSON.parse(localStorage.getItem(OLD_KEY)||'{"profiles":[]}');
-    if(old && Array.isArray(old.profiles)){
-      const migrated=normalize(old);
-      localStorage.setItem(KEY,JSON.stringify(migrated));
-      return migrated;
-    }
-  }catch(e){}
-  return {profiles:[],teams:["Outlaws","Werewolves"]};
+  // V10 first, then migrate any previous version without deleting it.
+  const keys=["QC_SHADOWING_V10_DATA","QC_SHADOWING_V9_DATA","QC_SHADOWING_V8_DATA","QC_SHADOWING_V7_DATA","QC_SHADOWING_V6_DATA"];
+  for(const key of keys){
+    try{
+      const saved=JSON.parse(localStorage.getItem(key)||"");
+      if(saved && Array.isArray(saved.profiles)){
+        const migrated=normalize(saved);
+        // Repair the two existing profiles from the previous setup if they
+        // were accidentally moved to Unassigned during migration.
+        migrated.profiles.forEach(p=>{
+          const n=(p.name||"").trim().toLowerCase();
+          if(n==="dutzi" && (!p.team || p.team.toLowerCase()==="unassigned")) p.team="Outlaws";
+          if(n==="monu" && (!p.team || p.team.toLowerCase()==="unassigned")) p.team="Werewolves";
+        });
+        if(!migrated.teams.includes("Outlaws")) migrated.teams.push("Outlaws");
+        if(!migrated.teams.includes("Werewolves")) migrated.teams.push("Werewolves");
+        if(!migrated.teams.includes("Unassigned")) migrated.teams.push("Unassigned");
+        localStorage.setItem("QC_SHADOWING_V10_DATA",JSON.stringify(migrated));
+        return migrated;
+      }
+    }catch(e){}
+  }
+  return {profiles:[],teams:["Rockstars","Unassigned","Vampires","Outlaws","Werewolves","Vultures","Rebels","Firestarters","Mobsters","Misfits","Racoons","Lovers"]};
 }
 function normalize(d){
-  d.profiles=(d.profiles||[]).map(p=>({...p,name:p.name||"",team:p.team||"Unassigned",feedbacks:Array.isArray(p.feedbacks)?p.feedbacks:[]}));
-  let teams=Array.isArray(d.teams)?d.teams:[];
+  d={...d};
+  d.profiles=(d.profiles||[]).map(p=>({
+    ...p,
+    id:p.id||uid(),
+    name:p.name||"",
+    team:p.team||"Unassigned",
+    feedbacks:Array.isArray(p.feedbacks)?p.feedbacks:[]
+  }));
+  let teams=Array.isArray(d.teams)?[...d.teams]:[];
   d.profiles.forEach(p=>{if(p.team && !teams.includes(p.team))teams.push(p.team)});
-  if(!teams.length) teams=["Outlaws","Werewolves"];
+  if(!teams.length) teams=["Unassigned"];
   d.teams=[...new Set(teams.filter(Boolean))];
   return d;
 }
@@ -108,11 +126,31 @@ function profile(name,team){
 }
 function getCurrent(){return data.profiles.find(p=>p.id===currentId)}
 function newProfile(teamName=""){
- currentId=null;clearForm();
- if(teamName) set("team",teamName);
- currentTeam=teamName||"ALL";
- renderTeams();renderProfiles();renderTimeline();document.getElementById("name").focus();
- document.getElementById("status").textContent="New chatter — completează numele și echipa, apoi Save Chatter.";
+  const team=(teamName||"").trim();
+  if(team){
+    const count=data.profiles.filter(p=>p.team.toLowerCase()===team.toLowerCase()).length;
+    if(count>=3){document.getElementById("status").textContent=`${team} este plină (3/3).`;return;}
+    const name=prompt(`Adaugă chatter în ${team}:`);
+    if(!name || !name.trim()) return;
+    const clean=name.trim();
+    const duplicate=data.profiles.find(p=>p.name.toLowerCase()===clean.toLowerCase() && p.team.toLowerCase()===team.toLowerCase());
+    if(duplicate){alert("Chatterul există deja în această echipă.");return;}
+    const p={id:uid(),name:clean,team,feedbacks:[]};
+    data.profiles.push(p);
+    currentId=p.id;
+    currentTeam=team;
+    persist();renderTeams();renderProfiles();renderTimeline();
+    set("name",p.name);set("team",p.team);set("date",today());set("potential","");set("notes","");
+    generated="";generatedCompare="";
+    document.getElementById("result").textContent="Aici va apărea feedback-ul.";
+    document.getElementById("status").textContent=`${clean} a fost adăugat în ${team}.`;
+    return;
+  }
+  currentId=null;clearForm();
+  currentTeam="ALL";
+  renderTeams();renderProfiles();renderTimeline();
+  document.getElementById("name").focus();
+  document.getElementById("status").textContent="New chatter — completează numele și echipa, apoi Save Chatter.";
 }
 function clearForm(){
  set("name","");set("team","");set("date",today());set("potential","");set("notes","");
@@ -153,7 +191,14 @@ function saveProfile(){
  }else{
    p.name=name; p.team=team;
  }
- if(!data.teams.includes(team)) data.teams.push(team);
+ const existingTeam=data.teams.find(t=>t.toLowerCase()===team.toLowerCase());
+ if(!existingTeam) data.teams.push(team);
+ else if(existingTeam!==team){
+   // Keep one canonical team name and update all assigned profiles.
+   data.profiles.forEach(x=>{if(x.team===team)x.team=existingTeam});
+   const savedP=getCurrent(); if(savedP) savedP.team=existingTeam;
+   team=existingTeam;
+ }
  currentTeam=team;
  persist();renderTeams();renderProfiles();renderTimeline();
  document.getElementById("status").textContent="Chatter salvat.";
@@ -235,6 +280,7 @@ function renderProfiles(){
    <div class="profileline"><div><b>${esc(p.name)}</b><small>${esc(p.team)}</small></div>
    <button class="ghost mini editbtn" onclick="event.stopPropagation();editProfile('${p.id}')">✎</button></div>
    <span class="tag">${p.feedbacks.length} feedback${p.feedbacks.length===1?'':'uri'}</span>
+   <button class="ghost mini" style="margin-top:7px" onclick="event.stopPropagation();openProfile('${p.id}')">Open</button>
  </div>`).join("");
  if(currentTeam!=="ALL"){
    const count=data.profiles.filter(p=>p.team===currentTeam).length;
@@ -256,11 +302,18 @@ function renderTimeline(){
 function generate(){
  const name=val("name"),team=val("team"),notes=val("notes"),date=val("date")||today(),potential=val("potential");
  if(!name||!team||!notes){document.getElementById("status").textContent="Completează numele, echipa și observațiile.";return}
- let p=profile(name,team);
- if(!p){
-   const teamCount=data.profiles.filter(x=>x.team.toLowerCase()===team.toLowerCase()).length;
-   if(teamCount>=3){document.getElementById("status").textContent=`Echipa ${team} are deja 3 chatteri.`;return}
-   p={id:uid(),name,team,feedbacks:[]};data.profiles.push(p);
+ let p=getCurrent();
+ if(p && p.name.toLowerCase()===name.toLowerCase()){
+   // Editing an existing selected profile: preserve its feedback history.
+   p.name=name;
+   p.team=team;
+ }else{
+   p=profile(name,team);
+   if(!p){
+     const teamCount=data.profiles.filter(x=>x.team.toLowerCase()===team.toLowerCase()).length;
+     if(teamCount>=3){document.getElementById("status").textContent=`Echipa ${team} are deja 3 chatteri.`;return}
+     p={id:uid(),name,team,feedbacks:[]};data.profiles.push(p);
+   }
  }
  currentId=p.id;
  if(!data.teams.includes(team)){data.teams.push(team);persist()}
