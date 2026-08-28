@@ -1,251 +1,260 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ro">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Shadowing Feedback v3.1</title>
+<title>Shadowing Feedback V6</title>
 <style>
-:root{--bg:#0b0f14;--card:#151a22;--card2:#0d1117;--line:#2a3240;--text:#f2f4f7;--muted:#8d97a8;--accent:#7c3aed;--good:#22c55e;--warn:#f59e0b;--bad:#ef4444}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
-.wrap{max-width:1050px;margin:32px auto;padding:0 18px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:16px}
-h1{font-size:25px;margin:0 0 6px}.sub{color:var(--muted);font-size:13px;margin-bottom:22px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:700px){.grid{grid-template-columns:1fr}}
-label{display:block;color:#cbd2dc;font-size:13px;font-weight:600;margin-bottom:7px}
-input,textarea,select{width:100%;background:#090d12;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:12px;font:inherit;outline:none}
-input:focus,textarea:focus,select:focus{border-color:var(--accent)}
-textarea{min-height:230px;resize:vertical;line-height:1.5}
-.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
-button{border:0;border-radius:9px;padding:11px 17px;font-weight:700;color:white;background:#293140;cursor:pointer}
-button.primary{background:var(--accent)}button:hover{filter:brightness(1.1)}
-.result{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#080b10;border:1px solid var(--line);border-radius:10px;padding:18px;line-height:1.55;min-height:250px}
-.history{display:flex;flex-direction:column;gap:9px}.item{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#0d1219;border:1px solid var(--line);border-radius:9px;padding:11px 13px}.item small{color:var(--muted)}.item button{padding:7px 10px;font-size:12px}
-.note{font-size:12px;color:var(--muted);line-height:1.45;margin-top:9px}
-.status{margin-top:10px;font-size:13px;color:#aeb7c5}
-.hidden{display:none}
+:root{--bg:#0b0d12;--panel:#151922;--panel2:#0f1218;--line:#2b3140;--text:#f2f4f8;--muted:#9da5b5;--accent:#7c3aed;--green:#20c77a;--yellow:#eab308;--red:#ef4444}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{max-width:1050px;margin:32px auto;padding:0 18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:0 10px 30px #0005}
+h1{margin:0 0 6px;font-size:25px}.sub{color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:18px}
+label{display:block;font-size:13px;font-weight:700;margin:12px 0 7px}
+input,textarea,select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:9px;color:var(--text);padding:12px;font:inherit;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}textarea{min-height:180px;resize:vertical}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+button{border:0;border-radius:9px;padding:11px 17px;font-weight:800;color:white;background:#292f3b;cursor:pointer}
+button.primary{background:var(--accent)}button.danger{background:#242a35}button:hover{filter:brightness(1.08)}
+.status{margin-top:12px;color:var(--muted);font-size:12px}.result{margin-top:18px;display:none}
+pre{white-space:pre-wrap;word-wrap:break-word;background:#080a0e;border:1px solid var(--line);border-radius:10px;padding:18px;font:14px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace}
+.history{margin-top:18px}.history-item{border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:10px 12px;margin-top:8px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.history-item small{color:var(--muted)}.history-item button{padding:7px 10px;font-size:12px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="card">
-    <h1>SHADOWING FEEDBACK v3.1</h1>
-    <div class="sub">Compact QC feedback — exact 3 / 3 / 3 points, progress tracking and history by name + team.</div>
+<div class="card">
+<h1>Shadowing Feedback V6</h1>
+<div class="sub">
+Feedback compact pentru QC/management. Reformulează observațiile în termeni de chatting/OnlyFans, fără copy-paste. Exact 3 puncte bune, 3 puncte de îmbunătățit și 3 action points. Istoricul rămâne salvat în browser.
+</div>
 
-    <div class="grid">
-      <div>
-        <label>Nume</label>
-        <input id="name" placeholder="ex. Toni">
-      </div>
-      <div>
-        <label>Echipă</label>
-        <input id="team" placeholder="ex. Outlaws">
-      </div>
-    </div>
+<div class="grid">
+<div><label>Nume</label><input id="name" placeholder="ex. Monu"></div>
+<div><label>Echipă</label><input id="team" placeholder="ex. Werewolves"></div>
+</div>
 
-    <div style="margin-top:14px">
-      <label>Feedback brut / observațiile tale</label>
-      <textarea id="raw" placeholder="Scrie liber exact cum ai face feedback-ul. Nu trebuie să fie structurat.
+<label>Observații shadowing</label>
+<textarea id="notes" placeholder="Scrie liber ce ai observat: ce face bine, unde se pierde, ce s-a schimbat față de data trecută, ce trebuie lucrat etc."></textarea>
 
-Ex:
-Toni e foarte rapid... îi place să prioritizeze fanii... se descurcă bine pe sexting/VIP... îi lipsește empatia și GFE... e prea tranzacțional... i-am explicat să nu sară cu discounturi..."></textarea>
-    </div>
+<div class="actions">
+<button class="primary" onclick="generate()">GENERATE</button>
+<button onclick="copyResult()">COPY</button>
+<button class="danger" onclick="clearAll()">CLEAR</button>
+</div>
+<div class="status" id="status"></div>
 
-    <div class="actions">
-      <button class="primary" onclick="generate()">GENEREAZĂ</button>
-      <button onclick="copyResult()">COPY</button>
-      <button onclick="clearAll()">CLEAR</button>
-    </div>
-    <div id="status" class="status"></div>
-    <div class="note">
-      Tool-ul păstrează istoricul în browser (localStorage). La același Nume + Echipă, următorul feedback poate folosi istoricul pentru IMPROVEMENT / STABLE / DECLINE.
-    </div>
-  </div>
+<div class="result" id="result">
+<pre id="output"></pre>
+</div>
 
-  <div class="card">
-    <label>Rezultat</label>
-    <div id="result" class="result">Completează numele, echipa și observațiile, apoi apasă GENEREAZĂ.</div>
-  </div>
-
-  <div class="card">
-    <label>Istoric</label>
-    <div id="history" class="history"></div>
-  </div>
+<div class="history">
+<label>Istoric</label>
+<div id="history"></div>
+</div>
+</div>
 </div>
 
 <script>
-const KEY='shadowing_feedback_v31_history';
+const KEY='shadowing_feedback_v6_history';
 
-function loadHistory(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch{return[]}}
-function saveHistory(x){localStorage.setItem(KEY,JSON.stringify(x))}
-function esc(s){return String(s||'').replace(/[<>]/g,'')}
-function norm(s){return String(s||'').toLowerCase().trim()}
-function clean(s){
-  return s.replace(/\s+/g,' ').replace(/^[•\-–—\s]+/,'').trim().replace(/[.]+$/,'');
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}}
+function save(x){localStorage.setItem(KEY,JSON.stringify(x))}
+function norm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+function uniq(a){return [...new Set(a.filter(Boolean))]}
+
+function has(n, patterns){
+  return patterns.some(p => p instanceof RegExp ? p.test(n) : n.includes(p));
 }
-function sentences(raw){
-  return raw.split(/(?<=[.!?])\s+|\n+/).map(clean).filter(x=>x.length>8)
+
+function summarize(notes){
+  const n=norm(notes);
+  let good=[], bad=[], actions=[];
+
+  // GOOD: extract only the strongest QC-relevant observations.
+  if(has(n,[/receptiv/,/asculta ce/,/baga la cap/,/implementeaza/,/aplica feedback/]))
+    good.push('Este receptiv la feedback și implementează rapid corecțiile.');
+  if(has(n,[/follow.?up/,/dupa ppv/,/ppv/]))
+    good.push('Are follow-up-urile după PPV bine integrate în workflow.');
+  if(has(n,[/tab nou/,/deschide fan.*tab/,/revina mai repede/]))
+    good.push('Gestionează bine follow-up-ul și revine rapid la fanii activi.');
+  if(has(n,[/\bgfe\b/,/gfe o gramada/,/face gfe/]))
+    good.push('Se descurcă bine pe GFE și menține conversația personală.');
+  if(has(n,[/rapid/,/foarte rapid/]))
+    good.push('Are un ritm bun de lucru și gestionează rapid conversațiile.');
+  if(has(n,[/prioritiz/,/fani.*priorit/,/stie.*priorit/]))
+    good.push('Înțelege prioritizarea fanilor în funcție de potențialul de vânzare.');
+  if(has(n,[/din ce in ce mai bine/,/mai bine/,/improvement/,/evolut/,/progres/]))
+    good.push('Se observă o evoluție pozitivă față de perioada anterioară.');
+
+  // BAD: identify actual performance gaps, not rephrased positives.
+  if(has(n,[/nu.*activitate/,/nu prea.*activitate/,/inceputul turei/,/engagement/]))
+    bad.push('Trebuie să creeze mai mult engagement și activitate la începutul turei.');
+  if(has(n,[/\bsales\b/,/vanzar/,/vânzar/,/nu.*deschide sales/,/nu prea deschide sales/]))
+    bad.push('Are nevoie de mai mult focus pe Sales și direcționarea conversației spre vânzare.');
+  if(has(n,[/transactional/,/tranzactional/,/tranzacțional/,/doar.*flow/,/fanul.*controle/,/controleze el conversatia/]))
+    bad.push('Trebuie să preia mai mult controlul conversației și să evite abordarea tranzacțională.');
+  if(has(n,[/discount/,/discounturi/,/sara.*discount/,/sare.*discount/]))
+    bad.push('Trebuie să evite discounturile ca soluție rapidă pentru închiderea vânzării.');
+  if(has(n,[/empatie/,/lipseste.*empatie/,/nu are.*empatie/]))
+    bad.push('Mai are de lucrat la empatie și la construirea unei conexiuni reale cu fanul.');
+  if(has(n,[/creativitate/,/nu are creativitate/,/scrie din cap/,/texte.*discord/]))
+    bad.push('Are nevoie de mai multă creativitate în formularea mesajelor și GFE.');
+  if(has(n,[/manipulare/,/manipulation/]))
+    bad.push('Mai are nevoie de practică pe partea de sales și manipulation.');
+  if(has(n,[/scamming/]))
+    bad.push('Mai are nevoie de practică pe situațiile de SCAMMING.');
+  if(has(n,[/se pierde/,/se bloche/,/frica/,/teama/,/fan.*tare/,/situatii dificile/]))
+    bad.push('Are nevoie de mai multă siguranță în situațiile dificile.');
+
+  // De-duplicate ideas that overlap.
+  bad = uniq(bad);
+
+  // ACTIONS: convert gaps into concrete next steps.
+  if(has(n,[/\bsales\b/,/vanzar/,/vânzar/,/transactional/,/tranzactional/,/fanul.*controle/]))
+    actions.push('Deschide Sales și stabilește direcția de vânzare înainte de a urma flow-ul fanului.');
+  if(has(n,[/\bgfe\b/,/empatie/,/creativitate/]))
+    actions.push('Folosește GFE pentru conexiune, apoi mută conversația natural spre sales.');
+  if(has(n,[/discount/,/sara.*discount/,/sare.*discount/]))
+    actions.push('Evită discounturile ca soluție rapidă și lucrează pe value + objection handling.');
+  if(has(n,[/nu.*activitate/,/engagement/,/inceputul turei/]))
+    actions.push('Începe tura cu outreach personalizat către platitori și creează activitate constantă.');
+  if(has(n,[/follow.?up/,/ppv/]))
+    actions.push('Menține follow-up-urile după PPV și revino rapid la fanii activi.');
+  if(has(n,[/manipulare/,/manipulation/]))
+    actions.push('Continuă practica pe sales și manipulation în conversații reale.');
+  if(has(n,[/scamming/]))
+    actions.push('Continuă practica pe SCAMMING și aplică feedback-ul în situații reale.');
+  if(has(n,[/receptiv/,/implementeaza/,/feedback/]))
+    actions.push('Continuă să aplici feedback-ul direct în conversații și în următorul shadowing.');
+
+  // Keep the output stable and useful even when the input is short.
+  while(good.length<3) good.push(
+    good.length===0 ? 'Workflow-ul este în curs de evaluare.' :
+    good.length===1 ? 'Are o bază bună de lucru și poate construi pe feedback.' :
+    'Se observă o evoluție pozitivă în modul de lucru.'
+  );
+  while(bad.length<3) bad.push(
+    bad.length===0 ? 'Mai este nevoie de consistență în execuție.' :
+    'Mai are nevoie de consolidare pe partea de performance.'
+  );
+  while(actions.length<3) actions.push(
+    actions.length===0 ? 'Continuăm monitorizarea și corectarea punctuală.' :
+    'Aplică feedback-ul în conversații reale și reevaluăm la următorul shadowing.'
+  );
+
+  return {
+    good: uniq(good).slice(0,3),
+    bad: uniq(bad).slice(0,3),
+    actions: uniq(actions).slice(0,3)
+  };
 }
-function pickMatches(raw, patterns){
-  const out=[];
-  for(const s of sentences(raw)){
-    if(patterns.some(p=>p.test(s)) && !out.includes(s)) out.push(s);
+
+function detectProgress(notes, prev){
+  if(!prev) return 'FIRST SHADOWING';
+  const n=norm(notes);
+  if(/regres|mai rau|mai rău|worse|inrautat|înrăutăț|decline|scade|scazut/.test(n)) return 'DECLINE';
+  if(/stagn|la fel|tot aceeasi|tot aceeași|nu s.?a schimbat|fara progres|fără progres|sta pe loc|stă pe loc/.test(n)) return 'STAGNANT';
+  if(/improv|mai bine|progres|evolut|se descurca mai bine|se descurcă mai bine|din ce in ce mai bine|din ce în ce mai bine|increase|mai ok|mai okay/.test(n))
+    return 'IMPROVEMENT';
+  return 'STAGNANT';
+}
+
+function overall(progress, notes){
+  if(progress==='FIRST SHADOWING') return 'Primul shadowing oferă un punct clar de plecare pentru următoarea evaluare.';
+  if(progress==='IMPROVEMENT') return 'Se observă progres și o evoluție pozitivă față de evaluarea anterioară.';
+  if(progress==='DECLINE') return 'Se observă un regres față de evaluarea anterioară; focus pe punctele de mai jos.';
+  return 'Progresul este limitat; următoarea evaluare trebuie să confirme schimbarea.';
+}
+
+function potential(notes){
+  const n=norm(notes);
+  if(/1[,.]?5k/.test(n) && /800|1k/.test(n))
+    return 'Momentan nu este la nivelul de $1.5k; $800–$1k rămâne un target realist dacă progresul se menține.';
+  if(/potential|target|tinta|ținta/.test(n)){
+    const m=notes.match(/\$?\s*[\d.,]+\s*(?:[-–]\s*\$?\s*[\d.,]+)?\s*k?/i);
+    if(m) return 'Targetul menționat rămâne de urmărit în funcție de consistență și rezultate.';
   }
-  return out;
+  return 'Reevaluăm potențialul după următoarele shadowing-uri.';
 }
-function short(s,max=145){
-  s=clean(s);
-  if(s.length<=max)return s;
-  return s.slice(0,max).replace(/\s+\S*$/,'')+'...';
-}
-function rewrite(s){
-  s=clean(s);
-  s=s.replace(/^eu personal mi se pare /i,'')
-     .replace(/^mie personal mi se pare /i,'')
-     .replace(/^o sa mai /i,'')
-     .replace(/^cred ca /i,'')
-     .replace(/^eu zic ca /i,'');
-  return short(s.charAt(0).toUpperCase()+s.slice(1));
-}
-function lastFor(name,team){
-  return loadHistory().filter(x=>norm(x.name)===norm(name)&&norm(x.team)===norm(team)).sort((a,b)=>b.ts-a.ts)[0];
-}
-function inferProgress(raw, previous){
-  if(!previous) return 'FIRST SHADOWING';
-  const r=norm(raw);
-  if(/improvement|improve|mai bine|mai bun|evolu|progres|descurca mai bine|a inteles mai bine/.test(r)) return 'IMPROVEMENT';
-  if(/mai rau|mai slab|declin|inrautat|scazut|worse|regres/.test(r)) return 'DECLINE';
-  return 'STABLE';
-}
-function buildLocal(name,team,raw){
-  const prev=lastFor(name,team);
-  const progress=inferProgress(raw,prev);
 
-  const good=pickMatches(raw,[
-    /rapid|vite|bun|bine|reuș|reus|priorit|intelege|înțelege|inteles|înțeles|se descurcă|descurca|timpu|follow.?up|sexting|vip|obj|scam/i,
-    /improvement|improve|evolu|progres/i
-  ]);
-  const bad=pickMatches(raw,[
-    /lips|lipse|empati|gfe|tranzac|fric|team|greș|gres|creativ|script|discount|prea mult|nu știe|nu stie|bloche|dificil|dificile|adapt/i
-  ]);
-
-  let positives=good.map(rewrite);
-  let negatives=bad.map(rewrite);
-
-  if(positives.length===0) positives=['Are o abordare bună pe baza observațiilor din shadowing.'];
-  if(negatives.length===0) negatives=['Mai are nevoie de consistență în situațiile mai dificile.'];
-
-  positives=positives.slice(0,3);
-  negatives=negatives.slice(0,3);
-
-  while(positives.length<3) positives.push(
-    ['Menține un ritm bun de lucru.','Înțelege din ce în ce mai bine prioritizarea conversațiilor.','Aplică mai bine feedback-ul primit.'][positives.length-1]
-  );
-  while(negatives.length<3) negatives.push(
-    ['Mai are nevoie de consistență în situațiile dificile.','Trebuie să adapteze mai mult conversația la fan.','Mai are de lucrat la naturalețea conversațiilor.'][negatives.length-1]
-  );
-
-  const actions=[];
-  if(/gfe|empati|conexi|tranzac/i.test(raw)) actions.push('Lucrăm pe empatie, GFE și o abordare mai puțin tranzacțională.');
-  if(/script|creativ|adapt/i.test(raw)) actions.push('Exersăm adaptarea scripturilor și răspunsurile mai naturale.');
-  if(/discount|vip|vânz|vanz/i.test(raw)) actions.push('Monitorizăm abordarea de vânzare și evităm discounturile folosite ca soluție rapidă.');
-  if(/scam|sexting|vip|obj/i.test(raw)) actions.push('Continuăm practica pe situațiile de conversație menționate în shadowing.');
-  if(actions.length===0) actions.push('Continuăm shadowing-ul și corectarea punctuală.');
-  if(actions.length<3) actions.push('Aplicăm feedback-ul în conversații reale.');
-  if(actions.length<3) actions.push('Verificăm progresul la următorul shadowing.');
-
-  const overall = progress==='FIRST SHADOWING'
-    ? 'Primul shadowing oferă un punct clar de plecare pentru următoarea evaluare.'
-    : progress==='IMPROVEMENT'
-    ? 'Se observă un improvement față de feedbackul anterior, cu evoluție pe zonele menționate.'
-    : progress==='DECLINE'
-    ? 'Se observă o scădere față de perioada anterioară și este nevoie de focus pe problemele identificate.'
-    : 'Nivelul este relativ stabil; următorul focus este pe consistență și zonele rămase de îmbunătățit.';
-
-  let potential='Potențialul va fi reevaluat pe baza progresului observat la următoarele shadowing-uri.';
-  const money=raw.match(/\$?\s?[\d,.]+\s?k?/gi);
-  if(money && money.length) potential='Potențialul rămâne de urmărit în funcție de consistență și evoluția rezultatelor.';
-
-  const previousNote=prev ? `\n\nComparativ cu ultimul feedback: ${prev.progress}.` : '';
-
-  return `SHADOWING FEEDBACK
-
-Nume: ${name}
-Echipa: ${team}
-
-Overall:
-${overall}
-
-📈 Progress: ${progress}${previousNote}
-
-✅ Puncte bune
-• ${positives[0]}
-• ${positives[1]}
-• ${positives[2]}
-
-⚠️ De îmbunătățit
-• ${negatives[0]}
-• ${negatives[1]}
-• ${negatives[2]}
-
-🎯 Action Point
-• ${actions[0]}
-• ${actions[1]}
-• ${actions[2]}
-
-💰 Potential:
-${potential}`;
-}
+function line(arr){return arr.map(x=>'• '+x).join('\n')}
 
 function generate(){
-  const name=esc(document.getElementById('name').value.trim());
-  const team=esc(document.getElementById('team').value.trim());
-  const raw=document.getElementById('raw').value.trim();
-  const status=document.getElementById('status');
-  if(!name||!team||!raw){status.textContent='Completează Nume, Echipă și feedback-ul.';return}
-  const prev=lastFor(name,team);
-  const text=buildLocal(name,team,raw);
-  document.getElementById('result').textContent=text;
+  const name=document.getElementById('name').value.trim();
+  const team=document.getElementById('team').value.trim();
+  const notes=document.getElementById('notes').value.trim();
+  if(!name||!team||!notes){document.getElementById('status').textContent='Completează numele, echipa și descrierea.';return}
 
-  const h=loadHistory();
-  h.push({id:Date.now(),name,team,raw,output:text,progress:inferProgress(raw,prev),ts:Date.now()});
-  saveHistory(h);
-  renderHistory();
-  status.textContent=prev?'Feedback generat și comparat cu istoricul anterior.':'Feedback generat și salvat în istoric.';
+  const all=load(), key=norm(name)+'|'+norm(team), old=all[key];
+  const d=summarize(notes), progress=detectProgress(notes,old?.latest);
+
+  const out=`SHADOWING FEEDBACK
+
+Nume: ${name}
+Echipă: ${team}
+
+Overall:
+${overall(progress,notes)}
+
+📈 Progress: ${progress}
+
+✅ Puncte bune
+${line(d.good)}
+
+⚠️ De îmbunătățit
+${line(d.bad)}
+
+🎯 Action Point
+${line(d.actions)}
+
+💰 Potential:
+${'• '+potential(notes)}`;
+
+  document.getElementById('output').textContent=out;
+  document.getElementById('result').style.display='block';
+  document.getElementById('status').textContent='Feedback generat și salvat.';
+
+  all[key]={
+    name,team,
+    latest:{notes,progress,good:d.good,bad:d.bad,actions:d.actions,date:new Date().toISOString()},
+    history:[...(old?.history||[]),{notes,progress,date:new Date().toISOString()}].slice(-20)
+  };
+  save(all); renderHistory();
 }
-async function copyResult(){
-  const text=document.getElementById('result').textContent;
-  try{await navigator.clipboard.writeText(text);document.getElementById('status').textContent='Copiat.'}
-  catch{document.getElementById('status').textContent='Nu am putut copia automat.'}
+
+function copyResult(){
+  const text=document.getElementById('output').textContent;
+  if(!text)return;
+  navigator.clipboard?.writeText(text);
+  document.getElementById('status').textContent='Copiat.';
 }
+
 function clearAll(){
-  document.getElementById('name').value='';
-  document.getElementById('team').value='';
-  document.getElementById('raw').value='';
-  document.getElementById('result').textContent='Completează numele, echipa și observațiile, apoi apasă GENEREAZĂ.';
+  ['name','team','notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('output').textContent='';
+  document.getElementById('result').style.display='none';
   document.getElementById('status').textContent='';
 }
-function loadItem(id){
-  const x=loadHistory().find(a=>a.id===id);if(!x)return;
+
+function renderHistory(){
+  const box=document.getElementById('history'), all=load();
+  const items=Object.values(all).sort((a,b)=>new Date(b.latest.date)-new Date(a.latest.date));
+  if(!items.length){box.innerHTML='<small style="color:#9da5b5">Niciun chatter salvat încă.</small>';return}
+  box.innerHTML=items.map((x,i)=>`<div class="history-item"><div><b>${escapeHtml(x.name)}</b> · ${escapeHtml(x.team)}<br><small>${escapeHtml(x.latest.progress)} · ${new Date(x.latest.date).toLocaleDateString('ro-RO')}</small></div><button onclick="loadPerson(${i})">LOAD</button></div>`).join('');
+  window.__hist=items;
+}
+function loadPerson(i){
+  const x=window.__hist[i];
   document.getElementById('name').value=x.name;
   document.getElementById('team').value=x.team;
-  document.getElementById('raw').value=x.raw;
-  document.getElementById('result').textContent=x.output;
-  document.getElementById('status').textContent='Feedback încărcat din istoric.';
+  document.getElementById('notes').value='';
+  document.getElementById('output').textContent='';
+  document.getElementById('result').style.display='none';
+  document.getElementById('status').textContent='Chatter încărcat. Introdu noul shadowing.';
 }
-function deleteItem(id){
-  saveHistory(loadHistory().filter(x=>x.id!==id));renderHistory();
-}
-function renderHistory(){
-  const box=document.getElementById('history'), h=loadHistory().sort((a,b)=>b.ts-a.ts);
-  box.innerHTML='';
-  if(!h.length){box.innerHTML='<div class="note">Nu există feedback salvat.</div>';return}
-  for(const x of h){
-    const d=new Date(x.ts).toLocaleDateString('ro-RO');
-    const div=document.createElement('div');div.className='item';
-    div.innerHTML=`<div><b>${x.name}</b> · ${x.team}<br><small>${x.progress} · ${d}</small></div>
-      <div><button onclick="loadItem(${x.id})">LOAD</button><button onclick="deleteItem(${x.id})">ȘTERGE</button></div>`;
-    box.appendChild(div);
-  }
-}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 renderHistory();
 </script>
 </body>
