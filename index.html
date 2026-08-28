@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>QC Shadowing Feedback V8</title>
+<title>QC Shadowing Feedback V9</title>
 <style>
 :root{--bg:#0d1117;--card:#151b24;--card2:#0b1016;--border:#293241;--text:#eef2f7;--muted:#9aa6b5;--blue:#7c9cff;--green:#35d07f;--yellow:#ffbd55;--red:#ff6577}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
@@ -15,13 +15,13 @@ label{font-size:12px;font-weight:700;color:#cbd4df;display:block;margin:0 0 6px}
 textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}button{border:0;border-radius:8px;padding:9px 13px;background:#273149;color:#fff;font-weight:800;cursor:pointer}button.primary{background:var(--blue);color:#08101f}button.danger{background:#3b2029;color:#ffbdc6}button.ghost{background:transparent;border:1px solid var(--border)}
 .result{margin-top:14px;background:#090d12;border:1px solid var(--border);border-radius:10px;padding:17px;white-space:pre-wrap;font:13px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;min-height:280px}
 .timeline{margin-top:16px}.entry{border:1px solid var(--border);border-radius:10px;background:var(--card2);margin-top:9px;overflow:hidden}.entryhead{display:flex;justify-content:space-between;padding:11px 13px;background:#121923}.entryhead b{font-size:13px}.entryhead span{font-size:11px;color:var(--muted)}.entrybody{padding:12px}.entrybody pre{white-space:pre-wrap;margin:0;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}.compare{border-left:3px solid var(--blue);padding:8px 11px;margin-top:10px;color:#cbd5e5;font-size:12px}
-.empty{color:var(--muted);font-size:13px;padding:10px 2px}.status{font-size:12px;color:var(--muted);margin-top:8px}
+.empty{color:var(--muted);font-size:13px;padding:10px 2px}button:disabled{opacity:.35;cursor:not-allowed}.status{font-size:12px;color:var(--muted);margin-top:8px}
 @media(max-width:850px){.layout{grid-template-columns:1fr}.side{min-height:auto}.grid{grid-template-columns:1fr}.full{grid-column:auto}}
 </style>
 </head>
 <body>
 <div class="app">
- <div class="top"><div><h1>SHADOWING FEEDBACK V8</h1><p>QC history — fiecare chatter are propriul profil și timeline.</p></div></div>
+ <div class="top"><div><h1>SHADOWING FEEDBACK V9</h1><p>QC history — fiecare chatter are propriul profil și timeline.</p></div></div>
  <div class="layout">
   <aside class="card side">
    <div class="sidehead"><b>Chatter History</b><span class="count" id="count">0</span></div>
@@ -47,6 +47,7 @@ textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:
     </div>
     <div class="row">
       <button class="primary" onclick="generate()">Generează</button>
+      <button onclick="saveProfile()">Save Chatter</button>
       <button onclick="saveFeedback()">Save Feedback</button>
       <button class="ghost" onclick="clearForm()">Clear</button>
     </div>
@@ -106,9 +107,12 @@ function profile(name,team){
  return data.profiles.find(p=>p.name.toLowerCase()===name.toLowerCase()&&p.team.toLowerCase()===team.toLowerCase())
 }
 function getCurrent(){return data.profiles.find(p=>p.id===currentId)}
-function newProfile(){
- currentId=null;clearForm();currentTeam="ALL";renderTeams();renderProfiles();renderTimeline();document.getElementById("name").focus();
- document.getElementById("status").textContent="New chatter — completează numele și echipa.";
+function newProfile(teamName=""){
+ currentId=null;clearForm();
+ if(teamName) set("team",teamName);
+ currentTeam=teamName||"ALL";
+ renderTeams();renderProfiles();renderTimeline();document.getElementById("name").focus();
+ document.getElementById("status").textContent="New chatter — completează numele și echipa, apoi Save Chatter.";
 }
 function clearForm(){
  set("name","");set("team","");set("date",today());set("potential","");set("notes","");
@@ -135,14 +139,24 @@ function editProfile(id){
 }
 function saveProfile(){
  const p=getCurrent(), name=val("name"), team=val("team");
- if(!p){document.getElementById("status").textContent="Deschide un chatter existent pentru editare.";return}
  if(!name||!team){document.getElementById("status").textContent="Numele și echipa sunt obligatorii.";return}
- const duplicate=data.profiles.find(x=>x.id!==p.id && x.name.toLowerCase()===name.toLowerCase() && x.team.toLowerCase()===team.toLowerCase());
+ const members=data.profiles.filter(x=>x.id!==currentId && x.team.toLowerCase()===team.toLowerCase());
+ if(members.length>=3 && (!p || p.team.toLowerCase()!==team.toLowerCase())){
+   document.getElementById("status").textContent=`Echipa ${team} are deja 3 chatteri.`;
+   return;
+ }
+ const duplicate=data.profiles.find(x=>x.id!==currentId && x.name.toLowerCase()===name.toLowerCase() && x.team.toLowerCase()===team.toLowerCase());
  if(duplicate){document.getElementById("status").textContent="Există deja un chatter cu acest nume în această echipă.";return}
- p.name=name; p.team=team;
+ if(!p){
+   currentId=uid();
+   data.profiles.push({id:currentId,name,team,feedbacks:[]});
+ }else{
+   p.name=name; p.team=team;
+ }
  if(!data.teams.includes(team)) data.teams.push(team);
+ currentTeam=team;
  persist();renderTeams();renderProfiles();renderTimeline();
- document.getElementById("status").textContent="Profil actualizat.";
+ document.getElementById("status").textContent="Chatter salvat.";
 }
 function addTeam(){
  const name=prompt("Nume echipă nouă:");
@@ -196,9 +210,14 @@ function renderTeams(){
  const rows=[{name:"ALL",label:"Toate echipele"}].concat(teams.map(t=>({name:t,label:t})));
  box.innerHTML=rows.map(x=>{
    const count=x.name==="ALL" ? data.profiles.length : data.profiles.filter(p=>p.team===x.name).length;
+   const canAdd=x.name!=="ALL" && count<3;
    return `<div class="teamrow ${currentTeam===x.name?'active':''}" onclick="selectTeam('${escAttr(x.name)}')">
-      <span><span class="teamname">${esc(x.label)}</span><span class="teamcount">${count}</span></span>
-      ${x.name!=="ALL"?`<span class="teamactions"><button class="ghost mini" onclick="event.stopPropagation();renameTeam('${escAttr(x.name)}')" title="Redenumește">✎</button><button class="danger mini" onclick="event.stopPropagation();deleteTeam('${escAttr(x.name)}')" title="Șterge">×</button></span>`:""}
+      <span><span class="teamname">${esc(x.label)}</span><span class="teamcount">${count}${x.name==="ALL"?"":" / 3"}</span></span>
+      ${x.name!=="ALL"?`<span class="teamactions">
+        <button class="ghost mini" onclick="event.stopPropagation();newProfile('${escAttr(x.name)}')" title="${canAdd?"Adaugă chatter":"Echipa are deja 3 chatteri"}" ${canAdd?"":"disabled"}>＋</button>
+        <button class="ghost mini" onclick="event.stopPropagation();renameTeam('${escAttr(x.name)}')" title="Redenumește">✎</button>
+        <button class="danger mini" onclick="event.stopPropagation();deleteTeam('${escAttr(x.name)}')" title="Șterge">×</button>
+      </span>`:""}
    </div>`;
  }).join("");
 }
@@ -211,12 +230,18 @@ function renderProfiles(){
    return teamOk && text.includes(q);
  }).sort((a,b)=>a.name.localeCompare(b.name));
  document.getElementById("count").textContent=data.profiles.length;
- if(!ps.length){box.innerHTML='<div class="empty">Niciun chatter în această selecție.</div>';return}
- box.innerHTML=ps.map(p=>`<div class="profile ${p.id===currentId?'active':''}" onclick="openProfile('${p.id}')">
+ if(!ps.length) box.innerHTML='<div class="empty">Niciun chatter în această selecție.</div>';
+ else box.innerHTML=ps.map(p=>`<div class="profile ${p.id===currentId?'active':''}" onclick="openProfile('${p.id}')">
    <div class="profileline"><div><b>${esc(p.name)}</b><small>${esc(p.team)}</small></div>
    <button class="ghost mini editbtn" onclick="event.stopPropagation();editProfile('${p.id}')">✎</button></div>
    <span class="tag">${p.feedbacks.length} feedback${p.feedbacks.length===1?'':'uri'}</span>
  </div>`).join("");
+ if(currentTeam!=="ALL"){
+   const count=data.profiles.filter(p=>p.team===currentTeam).length;
+   box.innerHTML += count<3
+     ? `<button class="ghost" style="width:100%;margin-top:7px" onclick="newProfile('${escAttr(currentTeam)}')">＋ Adaugă chatter (${count}/3)</button>`
+     : `<div class="status" style="padding:7px 2px">Echipa are 3/3 chatteri.</div>`;
+ }
 }
 function renderTimeline(){
  const p=getCurrent(), box=document.getElementById("timeline");
@@ -232,7 +257,11 @@ function generate(){
  const name=val("name"),team=val("team"),notes=val("notes"),date=val("date")||today(),potential=val("potential");
  if(!name||!team||!notes){document.getElementById("status").textContent="Completează numele, echipa și observațiile.";return}
  let p=profile(name,team);
- if(!p){p={id:uid(),name,team,feedbacks:[]};data.profiles.push(p)}
+ if(!p){
+   const teamCount=data.profiles.filter(x=>x.team.toLowerCase()===team.toLowerCase()).length;
+   if(teamCount>=3){document.getElementById("status").textContent=`Echipa ${team} are deja 3 chatteri.`;return}
+   p={id:uid(),name,team,feedbacks:[]};data.profiles.push(p);
+ }
  currentId=p.id;
  if(!data.teams.includes(team)){data.teams.push(team);persist()}
  const t=notes.toLowerCase(), prev=[...p.feedbacks].sort((a,b)=>b.date.localeCompare(a.date)).find(x=>x.date<date);
@@ -291,7 +320,11 @@ function saveFeedback(){
  if(!generated){document.getElementById("status").textContent="Generează întâi feedback-ul.";return}
  const name=val("name"),team=val("team"),date=val("date")||today();
  let p=profile(name,team);
- if(!p){p={id:uid(),name,team,feedbacks:[]};data.profiles.push(p);currentId=p.id}
+ if(!p){
+   const teamCount=data.profiles.filter(x=>x.team.toLowerCase()===team.toLowerCase()).length;
+   if(teamCount>=3){document.getElementById("status").textContent=`Echipa ${team} are deja 3 chatteri.`;return}
+   p={id:uid(),name,team,feedbacks:[]};data.profiles.push(p);currentId=p.id
+ }
  if(!data.teams.includes(team))data.teams.push(team);
  const existing=p.feedbacks.find(f=>f.date===date);
  if(existing){if(!confirm("Există deja un feedback pentru această dată. Îl înlocuiești?"))return;Object.assign(existing,{result:generated,notes:val("notes"),potential:val("potential"),compare:generatedCompare})}
