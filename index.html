@@ -3,31 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>QC Shadowing Feedback V11</title>
+<title>QC Shadowing Feedback V9</title>
 <style>
 :root{--bg:#0d1117;--card:#151b24;--card2:#0b1016;--border:#293241;--text:#eef2f7;--muted:#9aa6b5;--blue:#7c9cff;--green:#35d07f;--yellow:#ffbd55;--red:#ff6577}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
 .app{max-width:1250px;margin:24px auto;padding:0 16px}.top{display:flex;justify-content:space-between;gap:12px;align-items:end;margin-bottom:18px}.top h1{margin:0;font-size:25px}.top p{margin:5px 0 0;color:var(--muted);font-size:13px}
-.layout{display:grid;grid-template-columns:280px 1fr;gap:16px}.card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:16px}.side{min-height:650px;max-height:calc(100vh - 48px);overflow:auto}.sidehead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.sidehead b{font-size:14px}.count{font-size:11px;color:var(--muted)}
+.layout{display:grid;grid-template-columns:280px 1fr;gap:16px}.card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:16px}.side{min-height:650px}.sidehead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.sidehead b{font-size:14px}.count{font-size:11px;color:var(--muted)}
 .search,input,textarea,select{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px;font:inherit;outline:none}.search{margin-bottom:10px}
-.teamlist{margin-top:12px}.teamrow{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:8px;cursor:pointer;margin:3px 0;color:#cbd4df}.teamrow:hover{background:#101721}.teamrow.active{background:#202a3a;color:#fff}.teamrow .teamname{font-weight:800;font-size:12px}.teamrow .teamcount{font-size:10px;color:var(--muted);margin-left:6px}.teamactions{display:flex;gap:4px}.mini{padding:4px 7px!important;font-size:10px!important;border-radius:6px!important}.teammembers{padding:2px 0 7px 12px;border-left:2px solid #293241;margin:0 0 5px 10px}.profile{padding:9px 10px;border:1px solid transparent;border-radius:9px;cursor:pointer;margin:4px 0}.profile:hover{background:#101721;border-color:var(--border)}.profile.active{background:#202a3a;border-color:#46577a}.profile b{display:block}.profile small{color:var(--muted)}.tag{display:inline-block;margin-top:5px;font-size:10px;padding:2px 6px;border-radius:20px;background:#263149;color:#b9c8ff}.profileline{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.editbtn{opacity:.65}.profile:hover .editbtn{opacity:1}
+.teamlist{margin-top:12px}.teamrow{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:8px;cursor:pointer;margin:3px 0;color:#cbd4df}.teamrow:hover{background:#101721}.teamrow.active{background:#202a3a;color:#fff}.teamrow .teamname{font-weight:800;font-size:12px}.teamrow .teamcount{font-size:10px;color:var(--muted);margin-left:6px}.teamactions{display:flex;gap:4px}.mini{padding:4px 7px!important;font-size:10px!important;border-radius:6px!important}.profile{padding:11px;border:1px solid transparent;border-radius:9px;cursor:pointer;margin:5px 0}.profile:hover{background:#101721;border-color:var(--border)}.profile.active{background:#202a3a;border-color:#46577a}.profile b{display:block}.profile small{color:var(--muted)}.tag{display:inline-block;margin-top:5px;font-size:10px;padding:2px 6px;border-radius:20px;background:#263149;color:#b9c8ff}.profileline{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.editbtn{opacity:.65}.profile:hover .editbtn{opacity:1}
 label{font-size:12px;font-weight:700;color:#cbd4df;display:block;margin:0 0 6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}
 textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}button{border:0;border-radius:8px;padding:9px 13px;background:#273149;color:#fff;font-weight:800;cursor:pointer}button.primary{background:var(--blue);color:#08101f}button.danger{background:#3b2029;color:#ffbdc6}button.ghost{background:transparent;border:1px solid var(--border)}
 .result{margin-top:14px;background:#090d12;border:1px solid var(--border);border-radius:10px;padding:17px;white-space:pre-wrap;font:13px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;min-height:280px}
-.timeline{margin-top:16px}.entry{border:1px solid var(--border);border-radius:10px;background:var(--card2);margin-top:9px;overflow:hidden}.entryhead{display:flex;justify-content:space-between;padding:11px 13px;background:#121923}.entryhead b{font-size:13px}.entryhead span{font-size:11px;color:var(--muted)}.entrybody{padding:12px}.entrybody pre{white-space:pre-wrap;margin:0;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}.compare{border-left:3px solid var(--blue);padding:8px 11px;margin-top:10px;color:#cbd5e5;font-size:12px}
-.empty{color:var(--muted);font-size:13px;padding:10px 2px}button:disabled{opacity:.35;cursor:not-allowed}.status{font-size:12px;color:var(--muted);margin-top:8px}
+.timeline{margin-top:16px}.entry{border:1px solid var(--border);border-radius:10px;background:var(--card2);margin-top:9px;overflow:hidden}.entryhead{display:flex;justify-content:space-between;padding:11px 13px;background:#121923}.entryhead b{font-size:13px}.entryhead span{font-size:11px;color:var(--muted)}.entrybody{padding:12px}.entrybody pre{white-space:pre-wrap;margin:0;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}.compare{border-left:3px solid var(--blue);padding:8px 11px;margin-top:10px;color:#cbd5e5;font-size:12px}.review{border:1px solid var(--border);border-radius:10px;background:#101721;padding:13px;margin:10px 0 12px}.review h3{margin:0 0 8px;font-size:13px}.review .trend{font-weight:900;margin-bottom:8px}.reviewgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.reviewitem{background:#0b1016;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:11px}.reviewitem b{display:block;margin-bottom:3px}.reviewnote{color:var(--muted);font-size:11px;margin-top:9px}.goodtxt{color:var(--green)}.badtxt{color:var(--red)}.neutral{color:var(--yellow)}
+.empty{color:var(--muted);font-size:13px;padding:10px 2px}.status{font-size:12px;color:var(--muted);margin-top:8px}
 @media(max-width:850px){.layout{grid-template-columns:1fr}.side{min-height:auto}.grid{grid-template-columns:1fr}.full{grid-column:auto}}
 </style>
 </head>
 <body>
 <div class="app">
- <div class="top"><div><h1>SHADOWING FEEDBACK V11</h1><p>QC history — fiecare chatter are propriul profil și timeline.</p></div></div>
+ <div class="top"><div><h1>SHADOWING FEEDBACK V9</h1><p>QC history — fiecare chatter are propriul profil și timeline.</p></div></div>
  <div class="layout">
   <aside class="card side">
    <div class="sidehead"><b>Chatter History</b><span class="count" id="count">0</span></div>
    <input class="search" id="search" placeholder="Caută chatter sau echipă..." oninput="renderProfiles()">
    <button class="primary" style="width:100%" onclick="newProfile()">+ New Chatter</button>
-   <div class="status" style="margin:7px 0 0">Click <b>＋</b> lângă echipă pentru a adăuga direct un chatter.</div>
    <div class="row" style="margin-top:8px">
     <button class="ghost mini" style="width:100%" onclick="manageTeams()">⚙ Manage Teams</button>
    </div>
@@ -48,7 +47,6 @@ textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:
     </div>
     <div class="row">
       <button class="primary" onclick="generate()">Generează</button>
-      <button onclick="saveProfile()">Save Chatter</button>
       <button onclick="saveFeedback()">Save Feedback</button>
       <button class="ghost" onclick="clearForm()">Clear</button>
     </div>
@@ -63,6 +61,7 @@ textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:
 
    <section class="card timeline">
     <div class="sidehead"><b id="timelineTitle">Istoric chatter</b><span class="count" id="timelineCount"></span></div>
+    <div id="progressReview"></div>
     <div id="timeline" class="empty">Selectează un chatter din stânga.</div>
    </section>
   </main>
@@ -70,46 +69,32 @@ textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:
 </div>
 
 <script>
-const KEY="QC_SHADOWING_V11_DATA";
-const OLD_KEY="QC_SHADOWING_V7_DATA";
+const KEY="QC_SHADOWING_V9_DATA";
+const OLD_KEYS=["QC_SHADOWING_V8_DATA","QC_SHADOWING_V7_DATA"];
 let data=load(), currentId=null, currentTeam="ALL", generated="", generatedCompare="";
 
 function load(){
-  const keys=["QC_SHADOWING_V11_DATA","QC_SHADOWING_V10_DATA","QC_SHADOWING_V9_DATA","QC_SHADOWING_V8_DATA","QC_SHADOWING_V7_DATA","QC_SHADOWING_V6_DATA"];
-  for(const key of keys){
+  try{
+    const saved=JSON.parse(localStorage.getItem(KEY)||"");
+    if(saved && Array.isArray(saved.profiles)) return normalize(saved);
+  }catch(e){}
+  for(const oldKey of OLD_KEYS){
     try{
-      const saved=JSON.parse(localStorage.getItem(key)||"");
-      if(saved && Array.isArray(saved.profiles)){
-        const migrated=normalize(saved);
-        // Preserve the known existing profiles if an older version moved them to Unassigned.
-        migrated.profiles.forEach(p=>{
-          const n=(p.name||"").trim().toLowerCase();
-          if(n==="dutzi" && (!p.team || p.team.toLowerCase()==="unassigned")) p.team="Outlaws";
-          if(n==="monu" && (!p.team || p.team.toLowerCase()==="unassigned")) p.team="Werewolves";
-        });
-        ["Outlaws","Werewolves","Unassigned"].forEach(t=>{
-          if(!migrated.teams.includes(t)) migrated.teams.push(t);
-        });
-        localStorage.setItem("QC_SHADOWING_V11_DATA",JSON.stringify(migrated));
+      const old=JSON.parse(localStorage.getItem(oldKey)||"");
+      if(old && Array.isArray(old.profiles)){
+        const migrated=normalize(old);
+        localStorage.setItem(KEY,JSON.stringify(migrated));
         return migrated;
       }
     }catch(e){}
   }
-  return {profiles:[],teams:["Rockstars","Vampires","Outlaws","Werewolves","Vultures","Rebels","Firestarters","Mobsters","Misfits","Racoons","Lovers","Unassigned"]};
+  return {profiles:[],teams:["Outlaws","Werewolves"]};
 }
-
 function normalize(d){
-  d={...d};
-  d.profiles=(d.profiles||[]).map(p=>({
-    ...p,
-    id:p.id||uid(),
-    name:p.name||"",
-    team:p.team||"Unassigned",
-    feedbacks:Array.isArray(p.feedbacks)?p.feedbacks:[]
-  }));
-  let teams=Array.isArray(d.teams)?[...d.teams]:[];
+  d.profiles=(d.profiles||[]).map(p=>({...p,name:p.name||"",team:p.team||"Unassigned",feedbacks:Array.isArray(p.feedbacks)?p.feedbacks:[]}));
+  let teams=Array.isArray(d.teams)?d.teams:[];
   d.profiles.forEach(p=>{if(p.team && !teams.includes(p.team))teams.push(p.team)});
-  if(!teams.length) teams=["Unassigned"];
+  if(!teams.length) teams=["Outlaws","Werewolves"];
   d.teams=[...new Set(teams.filter(Boolean))];
   return d;
 }
@@ -124,32 +109,9 @@ function profile(name,team){
  return data.profiles.find(p=>p.name.toLowerCase()===name.toLowerCase()&&p.team.toLowerCase()===team.toLowerCase())
 }
 function getCurrent(){return data.profiles.find(p=>p.id===currentId)}
-function newProfile(teamName=""){
-  const team=(teamName||"").trim();
-  if(team){
-    const count=data.profiles.filter(p=>p.team.toLowerCase()===team.toLowerCase()).length;
-    if(count>=3){document.getElementById("status").textContent=`${team} este plină (3/3).`;return;}
-    const name=prompt(`Adaugă chatter în ${team}:`);
-    if(!name || !name.trim()) return;
-    const clean=name.trim();
-    const duplicate=data.profiles.find(p=>p.name.toLowerCase()===clean.toLowerCase() && p.team.toLowerCase()===team.toLowerCase());
-    if(duplicate){alert("Chatterul există deja în această echipă.");return;}
-    const p={id:uid(),name:clean,team,feedbacks:[]};
-    data.profiles.push(p);
-    currentId=p.id;
-    currentTeam=team;
-    persist();renderTeams();renderProfiles();renderTimeline();
-    set("name",p.name);set("team",p.team);set("date",today());set("potential","");set("notes","");
-    generated="";generatedCompare="";
-    document.getElementById("result").textContent="Aici va apărea feedback-ul.";
-    document.getElementById("status").textContent=`${clean} a fost adăugat în ${team}.`;
-    return;
-  }
-  currentId=null;clearForm();
-  currentTeam="ALL";
-  renderTeams();renderProfiles();renderTimeline();
-  document.getElementById("name").focus();
-  document.getElementById("status").textContent="New chatter — completează numele și echipa, apoi Save Chatter.";
+function newProfile(){
+ currentId=null;clearForm();currentTeam="ALL";renderTeams();renderProfiles();renderTimeline();document.getElementById("name").focus();
+ document.getElementById("status").textContent="New chatter — completează numele și echipa.";
 }
 function clearForm(){
  set("name","");set("team","");set("date",today());set("potential","");set("notes","");
@@ -176,31 +138,14 @@ function editProfile(id){
 }
 function saveProfile(){
  const p=getCurrent(), name=val("name"), team=val("team");
+ if(!p){document.getElementById("status").textContent="Deschide un chatter existent pentru editare.";return}
  if(!name||!team){document.getElementById("status").textContent="Numele și echipa sunt obligatorii.";return}
- const members=data.profiles.filter(x=>x.id!==currentId && x.team.toLowerCase()===team.toLowerCase());
- if(members.length>=3 && (!p || p.team.toLowerCase()!==team.toLowerCase())){
-   document.getElementById("status").textContent=`Echipa ${team} are deja 3 chatteri.`;
-   return;
- }
- const duplicate=data.profiles.find(x=>x.id!==currentId && x.name.toLowerCase()===name.toLowerCase() && x.team.toLowerCase()===team.toLowerCase());
+ const duplicate=data.profiles.find(x=>x.id!==p.id && x.name.toLowerCase()===name.toLowerCase() && x.team.toLowerCase()===team.toLowerCase());
  if(duplicate){document.getElementById("status").textContent="Există deja un chatter cu acest nume în această echipă.";return}
- if(!p){
-   currentId=uid();
-   data.profiles.push({id:currentId,name,team,feedbacks:[]});
- }else{
-   p.name=name; p.team=team;
- }
- const existingTeam=data.teams.find(t=>t.toLowerCase()===team.toLowerCase());
- if(!existingTeam) data.teams.push(team);
- else if(existingTeam!==team){
-   // Keep one canonical team name and update all assigned profiles.
-   data.profiles.forEach(x=>{if(x.team===team)x.team=existingTeam});
-   const savedP=getCurrent(); if(savedP) savedP.team=existingTeam;
-   team=existingTeam;
- }
- currentTeam=team;
+ p.name=name; p.team=team;
+ if(!data.teams.includes(team)) data.teams.push(team);
  persist();renderTeams();renderProfiles();renderTimeline();
- document.getElementById("status").textContent="Chatter salvat.";
+ document.getElementById("status").textContent="Profil actualizat.";
 }
 function addTeam(){
  const name=prompt("Nume echipă nouă:");
@@ -247,190 +192,162 @@ function manageTeams(){
  }
 }
 
-function profileMarkup(p){
- return `<div class="profile ${p.id===currentId?'active':''}" onclick="openProfile('${p.id}')">
-   <div class="profileline">
-     <div><b>${esc(p.name)}</b><small>${esc(p.team)}</small></div>
-     <button class="ghost mini editbtn" onclick="event.stopPropagation();editProfile('${p.id}')" title="Editează chatter">✎</button>
-   </div>
-   <span class="tag">${p.feedbacks.length} feedback${p.feedbacks.length===1?'':'uri'}</span>
- </div>`;
-}
-
 function renderTeams(){
  const box=document.getElementById("teams");
- const q=document.getElementById("search").value.toLowerCase().trim();
-
- // "Toate echipele" counts teams, not chatter profiles. Unassigned is kept separate.
- const realTeams=data.teams.filter(t=>t.toLowerCase()!=="unassigned");
- const visibleTeams=realTeams.filter(t=>{
-   if(!q) return true;
-   if(t.toLowerCase().includes(q)) return true;
-   return data.profiles.some(p=>p.team===t && p.name.toLowerCase().includes(q));
- });
-
- let out=`<div class="teamrow ${currentTeam==="ALL"?'active':''}" onclick="selectTeam('ALL')">
-   <span><span class="teamname">Toate echipele</span><span class="teamcount">${realTeams.length}</span></span>
- </div>`;
-
- visibleTeams.forEach(team=>{
-   const members=data.profiles.filter(p=>p.team===team)
-     .filter(p=>!q || team.toLowerCase().includes(q) || p.name.toLowerCase().includes(q))
-     .sort((a,b)=>a.name.localeCompare(b.name));
-   const count=data.profiles.filter(p=>p.team===team).length;
-   const expanded=currentTeam===team;
-   const canAdd=count<3;
-
-   out+=`<div class="teamrow ${expanded?'active':''}" onclick="selectTeam('${escAttr(team)}')">
-      <span><span class="teamname">${esc(team)}</span><span class="teamcount">${count} / 3</span></span>
-      <span class="teamactions">
-        <button class="ghost mini" onclick="event.stopPropagation();newProfile('${escAttr(team)}')" title="${canAdd?"Adaugă chatter":"Echipa are deja 3 chatteri"}" ${canAdd?"":"disabled"}>＋</button>
-        <button class="ghost mini" onclick="event.stopPropagation();renameTeam('${escAttr(team)}')" title="Redenumește">✎</button>
-        <button class="danger mini" onclick="event.stopPropagation();deleteTeam('${escAttr(team)}')" title="Șterge">×</button>
-      </span>
+ const q=document.getElementById("search").value.toLowerCase();
+ const teams=data.teams.filter(t=>t.toLowerCase().includes(q) || q==="");
+ const rows=[{name:"ALL",label:"Toate echipele"}].concat(teams.map(t=>({name:t,label:t})));
+ box.innerHTML=rows.map(x=>{
+   const count=x.name==="ALL" ? data.profiles.length : data.profiles.filter(p=>p.team===x.name).length;
+   return `<div class="teamrow ${currentTeam===x.name?'active':''}" onclick="selectTeam('${escAttr(x.name)}')">
+      <span><span class="teamname">${esc(x.label)}</span><span class="teamcount">${count}</span></span>
+      ${x.name!=="ALL"?`<span class="teamactions"><button class="ghost mini" onclick="event.stopPropagation();renameTeam('${escAttr(x.name)}')" title="Redenumește">✎</button><button class="danger mini" onclick="event.stopPropagation();deleteTeam('${escAttr(x.name)}')" title="Șterge">×</button></span>`:""}
    </div>`;
-
-   if(expanded){
-     out+=`<div class="teammembers">`;
-     if(members.length){
-       out+=members.map(profileMarkup).join("");
-     }else{
-       out+=`<div class="empty" style="padding:7px 2px">Niciun chatter în această echipă.</div>`;
-     }
-     if(canAdd){
-       out+=`<button class="ghost" style="width:100%;margin:4px 0 5px" onclick="newProfile('${escAttr(team)}')">＋ Adaugă chatter (${count}/3)</button>`;
-     }
-     out+=`</div>`;
-   }
- });
-
- // Keep Unassigned available for profiles that have not yet been assigned.
- const unassigned=data.profiles.filter(p=>p.team.toLowerCase()==="unassigned");
- if((!q || "unassigned".includes(q)) && data.teams.some(t=>t.toLowerCase()==="unassigned")){
-   const expanded=currentTeam==="Unassigned";
-   out+=`<div class="teamrow ${expanded?'active':''}" onclick="selectTeam('Unassigned')">
-      <span><span class="teamname">Unassigned</span><span class="teamcount">${unassigned.length} / 3</span></span>
-      <span class="teamactions">
-        <button class="ghost mini" onclick="event.stopPropagation();newProfile('Unassigned')" ${unassigned.length>=3?'disabled':''}>＋</button>
-        <button class="ghost mini" onclick="event.stopPropagation();renameTeam('Unassigned')">✎</button>
-      </span>
-   </div>`;
-   if(expanded){
-     out+=`<div class="teammembers">${unassigned.length?unassigned.map(profileMarkup).join(""):'<div class="empty">Niciun chatter.</div>'}</div>`;
-   }
- }
-
- if(q && !visibleTeams.length && !unassigned.length){
-   out+=`<div class="empty">Nicio echipă sau niciun chatter găsit.</div>`;
- }
- box.innerHTML=out;
-
- // The old separate profile area is no longer used: chatterii are shown directly under their team.
- const oldProfiles=document.getElementById("profiles");
- if(oldProfiles) oldProfiles.innerHTML="";
- document.getElementById("count").textContent=data.profiles.length;
+ }).join("");
 }
-
+function selectTeam(team){currentTeam=team;renderTeams();renderProfiles()}
 function renderProfiles(){
- renderTeams();
+ const q=document.getElementById("search").value.toLowerCase(), box=document.getElementById("profiles");
+ let ps=data.profiles.filter(p=>{
+   const text=(p.name+" "+p.team).toLowerCase();
+   const teamOk=currentTeam==="ALL" || p.team===currentTeam;
+   return teamOk && text.includes(q);
+ }).sort((a,b)=>a.name.localeCompare(b.name));
+ document.getElementById("count").textContent=data.profiles.length;
+ if(!ps.length){box.innerHTML='<div class="empty">Niciun chatter în această selecție.</div>';return}
+ box.innerHTML=ps.map(p=>`<div class="profile ${p.id===currentId?'active':''}" onclick="openProfile('${p.id}')">
+   <div class="profileline"><div><b>${esc(p.name)}</b><small>${esc(p.team)}</small></div>
+   <button class="ghost mini editbtn" onclick="event.stopPropagation();editProfile('${p.id}')">✎</button></div>
+   <span class="tag">${p.feedbacks.length} feedback${p.feedbacks.length===1?'':'uri'}</span>
+ </div>`).join("");
 }
-
-function selectTeam(team){
- currentTeam=team;
- renderTeams();
- // If a chatter was selected in another team, keep it selected but don't force the list open.
- renderTimeline();
-}
-
 function renderTimeline(){
  const p=getCurrent(), box=document.getElementById("timeline");
- if(!p){document.getElementById("timelineTitle").textContent="Istoric chatter";document.getElementById("timelineCount").textContent="";box.innerHTML='<div class="empty">Selectează un chatter din stânga.</div>';return}
+ if(!p){document.getElementById("timelineTitle").textContent="Istoric chatter";document.getElementById("timelineCount").textContent="";document.getElementById("progressReview").innerHTML="";box.innerHTML='<div class="empty">Selectează un chatter din stânga.</div>';return}
  document.getElementById("timelineTitle").textContent=`${p.name} — ${p.team}`;
  document.getElementById("timelineCount").textContent=`${p.feedbacks.length} evaluări`;
+ renderProgressReview(p);
  if(!p.feedbacks.length){box.innerHTML='<div class="empty">Nu există feedback-uri încă.</div>';return}
  const fs=[...p.feedbacks].sort((a,b)=>b.date.localeCompare(a.date));
  box.innerHTML=fs.map((f,i)=>`<div class="entry"><div class="entryhead"><b>${esc(f.date)}</b><span>${i===fs.length-1?'FIRST / oldest':''}</span></div><div class="entrybody"><pre>${esc(f.result)}</pre>${f.compare?`<div class="compare">↗ ${esc(f.compare)}</div>`:''}</div></div>`).join("");
 }
 
+function cleanText(s){return String(s||"").replace(/\s+/g," ").trim()}
+function sentences(text){return cleanText(text).split(/(?<=[.!?])\s+|\n+/).map(cleanText).filter(Boolean)}
+function has(t, patterns){return patterns.some(x=>x.test(t))}
+function firstMatching(t, patterns){return patterns.find(x=>x.test(t))}
+
+// IMPORTANT: This generator is source-based. It only reformulates facts explicitly
+// present in the user's notes. It never adds OF terminology, problems or skills by itself.
 function generate(){
  const name=val("name"),team=val("team"),notes=val("notes"),date=val("date")||today(),potential=val("potential");
  if(!name||!team||!notes){document.getElementById("status").textContent="Completează numele, echipa și observațiile.";return}
- let p=getCurrent();
- if(p && p.name.toLowerCase()===name.toLowerCase()){
-   // Editing an existing selected profile: preserve its feedback history.
-   p.name=name;
-   p.team=team;
- }else{
-   p=profile(name,team);
-   if(!p){
-     const teamCount=data.profiles.filter(x=>x.team.toLowerCase()===team.toLowerCase()).length;
-     if(teamCount>=3){document.getElementById("status").textContent=`Echipa ${team} are deja 3 chatteri.`;return}
-     p={id:uid(),name,team,feedbacks:[]};data.profiles.push(p);
-   }
- }
+ let p=profile(name,team);
+ if(!p){p={id:uid(),name,team,feedbacks:[]};data.profiles.push(p)}
  currentId=p.id;
  if(!data.teams.includes(team)){data.teams.push(team);persist()}
- const t=notes.toLowerCase(), prev=[...p.feedbacks].sort((a,b)=>b.date.localeCompare(a.date)).find(x=>x.date<date);
- let good=[],bad=[];
- const add=(arr,x)=>{if(!arr.includes(x))arr.push(x)};
- if(/rapid|repede|timely|la timp|timp util/.test(t))add(good,"Răspunde rapid și menține conversațiile active.");
- if(/follow.?up/.test(t))add(good,"Folosește follow-up-urile bine și revine la fanii activi.");
- if(/receptiv|ascult|implemente|baga la cap|învață|invata/.test(t))add(good,"Este receptiv la feedback și aplică rapid corecțiile.");
- if(/gfe|empatie|personalizat|creativ/.test(t))add(good,"Construiește conexiune și folosește GFE/personalizare.");
- if(/priorit|platitor|plătitor|vip|spender/.test(t))add(good,"Înțelege mai bine prioritizarea fanilor și alocă efortul corect.");
- if(/script/.test(t))add(good,"Folosește scripturile ca suport și le adaptează mai bine conversației.");
- if(/sales|vanzar|vânzar|ppv|obj|obiectiv/.test(t))add(good,"Are o direcție mai bună pe flow, OBJ și zona de sales.");
- if(/activitate|activ\b|mesaje personalizate/.test(t))add(good,"Creează activitate și caută oportunități de engagement.");
+ const t=notes.toLowerCase();
+ const prev=[...p.feedbacks].sort((a,b)=>b.date.localeCompare(a.date)).find(x=>x.date<date);
+ const ss=sentences(notes);
 
- if(/inactiv|nu prea a fost activitate|fără activitate|fara activitate/.test(t))add(bad,"Trebuie să creeze mai multă activitate la începutul turei.");
- if(/empatie|gfe|creativitate|din cap|tranzacțional|tranzactional/.test(t))add(bad,"Trebuie să fie mai natural, empatic și mai puțin tranzacțional.");
- if(/sales|vanzar|vânzar/.test(t))add(bad,"Trebuie să folosească SALES pentru a controla mai bine direcția conversației.");
- if(/nu deschide sales|nu prea deschide sales/.test(t))add(bad,"Trebuie să verifice SALES înainte de a urma strict flow-ul fanului.");
- if(/scam|scamming/.test(t))add(bad,"Mai are nevoie de practică pe scenarii de SCAMMING.");
- if(/manipul|conving|obiec/.test(t))add(bad,"Mai are nevoie de lucru pe persuasion și gestionarea obiecțiilor.");
- if(/discount|reducere/.test(t))add(bad,"Să evite discountul ca soluție rapidă pentru închiderea vânzării.");
- if(/se pierde|bloche|frica|teamă|teama|overwhelmed/.test(t))add(bad,"Mai are nevoie de consistență când conversația devine dificilă.");
- if(/adapt/.test(t))add(bad,"Trebuie să adapteze mai bine conversația la fan.");
+ // Extract only what the user actually said. These rules are deliberately conservative.
+ let good=[],bad=[],actions=[];
+ const add=(arr,x)=>{if(x && !arr.includes(x))arr.push(x)};
+ const src=(patterns)=>ss.find(x=>has(x.toLowerCase(),patterns));
 
- const fallbackGood=["Are o bază bună de lucru.","Se adaptează din ce în ce mai bine la workflow.","Are o evoluție pozitivă."];
- const fallbackBad=["Mai are nevoie de consistență în situațiile dificile.","Trebuie să adapteze mai bine conversația la fan.","Mai este nevoie de practică pentru a transforma skill-ul în reflex."];
- while(good.length<3) add(good,fallbackGood[good.length]);
- while(bad.length<3) add(bad,fallbackBad[bad.length]);
+ if(has(t,[/este receptiv/,/foarte receptiv/,/ascultă ce/,/asculta ce/,/baga la cap/,/bagă la cap/,/implementează/,/implementeaza/,/aplică feedback/,/aplica feedback/])) add(good,"Este receptiv la feedback și implementează corecțiile.");
+ if(has(t,[/rapid/,/repede/,/la timp/,/timp util/])) add(good,"Răspunde în timp util și gestionează bine ritmul conversațiilor.");
+ if(has(t,[/follow.?up/,/zz/])) add(good,"Are follow-up-urile bine integrate în workflow.");
+ if(has(t,[/taburi noi/,/tab nou/,/deschide.*tab/])) add(good,"Folosește tab-uri noi pentru a reveni mai ușor la fani.");
+ if(has(t,[/mai sigur/,/sigur pe ea/,/sigur pe el/,/încreder/,/independent/,/singur[ăa]?/])) add(good,"Este mai sigur(ă) pe el/ea și începe să gestioneze singur(ă) mai multe situații.");
+ if(has(t,[/priorit/,/plătitor/,/platitor/,/fan.*priorit/])) add(good,"Înțelege mai bine prioritizarea fanilor.");
+ if(has(t,[/face gfe/,/face mult gfe/,/folosește gfe/,/foloseste gfe/,/bun pe gfe/,/are empatie/,/este empatic/,/personalizează bine/,/personalizeaza bine/])) add(good,"Folosește GFE/personalizarea pentru a construi conexiune cu fanii.");
+ if(has(t,[/vânzar/,/vanzar/,/plăți/,/plati/,/ppv/,/obj/,/sales/]) && has(t,[/mai bine/,/descurc/,/înțelege/,/intelege/,/reuș/,/reus/,/sigur/])) add(good,"Se descurcă mai bine în zona de plăți și vânzări.");
+ if(has(t,[/activitate/,/outreach/,/mesaje personalizate/])) add(good,"Creează activitate prin outreach și mesaje personalizate.");
+ if(has(t,[/evoluție pozitivă/,/evolutie pozitiva/,/improvement/,/progres/,/mai ok/,/mai bine/])) add(good,"Se observă o evoluție pozitivă față de perioada anterioară.");
+
+ if(has(t,[/panicheaz/,/se pierde/,/blocheaz/,/overwhelmed/,/multe mesaje/,/frica/,/teamă/,/teama/])) add(bad,"Are nevoie de mai multă consistență când volumul sau presiunea cresc.");
+ if(has(t,[/empatie/,/gfe/,/creativitate/,/din cap/,/tranzacțional/,/tranzactional/])) add(bad,"Mai are de lucrat la empatie, GFE și o abordare mai naturală.");
+ if(has(t,[/sales/,/vânzar/,/vanzar/,/vânzări/,/vanzari/]) && has(t,[/mai trebuie/,/lipsește/,/lipseste/,/ajut/,/lucrăm/,/lucram/,/nu.*deschide/])) add(bad,"Mai are nevoie de lucru pe zona de vânzări.");
+ if(has(t,[/nu prea a fost activitate/,/inactiv/,/fără activitate/,/fara activitate/])) add(bad,"Trebuie să creeze mai multă activitate pe tură.");
+ if(has(t,[/scam/,/scamming/])) add(bad,"Mai are nevoie de practică pe situațiile de SCAMMING.");
+ if(has(t,[/manipul/])) add(bad,"Mai are nevoie de practică pe manipulare și gestionarea situațiilor dificile.");
+ if(has(t,[/discount/,/reducere/])) add(bad,"Trebuie să evite folosirea discountului ca soluție rapidă.");
+ if(has(t,[/flow/,/conversației/,/conversatiei/]) && has(t,[/fanul/,/fan/]) && has(t,[/control/,/direcț/,/direct/])) add(bad,"Trebuie să controleze mai bine direcția conversației.");
+ if(has(t,[/dead end/,/fani complicați/,/fani complicati/,/situații dificile/,/situatii dificile/])) add(bad,"Mai are nevoie de practică în situațiile dificile și dead-end.");
+ if(has(t,[/uită/,/uita/,/iese din conversații/,/iese din conversatii/])) add(bad,"Trebuie să își păstreze mai bine organizarea când schimbă conversațiile.");
+ if(has(t,[/încet/,/mai greu/,/nevoie de timp/,/cu timpul/])) add(bad,"Are nevoie de timp și practică pentru a transforma skill-urile în reflex.");
+
+ // If the source doesn't contain 3 distinct points, do NOT invent a new topic.
+ // Reuse a source-backed point in a shorter form only when necessary.
+ const sourceGood = good.slice();
+ const sourceBad = bad.slice();
+ while(good.length<3 && sourceGood.length) add(good,sourceGood[good.length % sourceGood.length]);
+ while(bad.length<3 && sourceBad.length) add(bad,sourceBad[bad.length % sourceBad.length]);
+ // Last resort: use direct, neutral wording tied to the actual observation sentences.
+ while(good.length<3 && ss.length) add(good, cleanText(ss[good.length % ss.length]).replace(/[.!?]+$/,"."));
+ while(bad.length<3 && ss.length) add(bad, cleanText(ss[bad.length % ss.length]).replace(/[.!?]+$/,"."));
  good=good.slice(0,3);bad=bad.slice(0,3);
+
+ if(has(t,[/începe să fie/,/mai sigur/,/mai bine/,/improvement/,/progres/,/evoluție/,/evolutie/,/descurcă/,/descurca/])) add(actions,"Continuăm să consolidăm progresul observat în conversații reale.");
+ if(has(t,[/panicheaz/,/multe mesaje/,/se pierde/,/uită/,/uita/])) add(actions,"Lucrăm pe organizare și prioritizare când volumul de mesaje crește.");
+ if(has(t,[/sales/,/vânzar/,/vanzar/,/plăți/,/plati/,/ppv/,/obj/])) add(actions,"Aplicăm feedback-ul pe zona de vânzări în conversații reale.");
+ if(has(t,[/gfe/,/empatie/,/creativ/])) add(actions,"Lucrăm pe empatie, GFE și răspunsuri mai naturale.");
+ if(has(t,[/manipul/])) add(actions,"Continuăm practica pe manipulare și situații dificile.");
+ if(has(t,[/scam/,/scamming/])) add(actions,"Continuăm practica pe situațiile de SCAMMING menționate.");
+ if(has(t,[/dead end/,/fani complicați/,/fani complicati/])) add(actions,"Facem practice pe fanii complicați și situațiile de dead-end.");
+ if(has(t,[/activitate/,/outreach/,/mesaje personalizate/])) add(actions,"Începem tura cu activitate și outreach personalizat.");
+ while(actions.length<3){
+   const pool=bad.length?bad:good;
+   if(!pool.length) break;
+   add(actions,"Aplicăm în conversații reale: "+pool[(actions.length)%pool.length]);
+ }
+ actions=actions.slice(0,3);
 
  let overall,progress,compare="";
  if(!prev){progress="FIRST SHADOWING";overall="Evaluarea oferă un punct clar de plecare pentru următoarea evaluare."}
  else{
-  progress="FOLLOW-UP SHADOWING";
-  const positive=/mai bine|improvement|progres|evolu|mai okay|mai bun|descurc.*mai/.test(t);
-  const negative=/mai rău|mai rau|regres|stagne|nu a progres|aceleași probleme|aceleasi probleme/.test(t);
-  if(positive&&!negative){overall="Se observă improvement față de feedback-ul anterior.";compare="Improvement față de evaluarea anterioară."}
-  else if(negative){overall="Progresul este limitat; problemele anterioare încă trebuie lucrate.";compare="Problemele anterioare încă apar — necesită follow-up."}
-  else {overall="Skill-urile sunt în dezvoltare; următoarea evaluare va arăta consistența.";compare="Urmărim dacă punctele de mai jos devin constante."}
+   progress="FOLLOW-UP SHADOWING";
+   const pos=has(t,[/mai bine/,/improvement/,/progres/,/evolu/,/mai sigur/,/mai ok/,/mai bine/]);
+   const neg=has(t,[/mai rău/,/mai rau/,/regres/,/stagne/,/nu a progres/,/aceleași probleme/,/aceleasi probleme/]);
+   if(pos&&!neg){overall="Se observă improvement față de feedback-ul anterior.";compare="Improvement menționat față de evaluarea anterioară."}
+   else if(neg){overall="Sunt aspecte care încă necesită lucru și urmărire.";compare="Problemele menționate anterior necesită în continuare atenție."}
+   else{overall="Skill-urile sunt în dezvoltare; următoarea evaluare va arăta consistența.";compare="Urmărim dacă observațiile de azi devin constante."}
  }
- let a1=/empatie|gfe|tranzac/.test(t)?"Lucrăm pe empatie, GFE și conversații mai naturale.":/activitate/.test(t)?"Creăm activitate constantă prin outreach personalizat.":"Aplicăm feedback-ul direct în conversații reale.";
- let a2=/sales|vanzar|vânzar/.test(t)?"Folosim SALES pentru a controla direcția și a identifica oportunități de vânzare.":"Facem practice pe situațiile unde încă se blochează.";
- let a3=/scam|scamming/.test(t)?"Continuăm practica pe SCAMMING și scenarii reale.":/discount/.test(t)?"Evităm discounturile rapide și lucrăm pe persuasion.":"Continuăm shadowing-ul și corectarea punctuală.";
 
- let out=`SHADOWING FEEDBACK\n\nNume: ${name}\nEchipă: ${team}\nData: ${date}\n\nOverall:\n${overall}\n\n📈 Progress: ${progress}\n\n✅ Puncte bune\n• ${good.join("\n• ")}\n\n⚠️ De îmbunătățit\n• ${bad.join("\n• ")}\n\n🎯 Action Point\n• ${a1}\n• ${a2}\n• ${a3}`;
+ let out=`SHADOWING FEEDBACK\n\nNume: ${name}\nEchipă: ${team}\nData: ${date}\n\nOverall:\n${overall}\n\n📈 Progress: ${progress}\n\n✅ Puncte bune\n• ${good.join("\n• ")}\n\n⚠️ De îmbunătățit\n• ${bad.join("\n• ")}\n\n🎯 Action Point\n• ${actions.join("\n• ")}`;
  if(potential)out+=`\n\n💰 Potential:\n• Target: ${potential}, în funcție de consistență și progres.`;
- else if(prev)out+=`\n\n💰 Potential:\n• Reevaluat în funcție de consistența următoarelor shadowing-uri.`;
-
  generated=out;generatedCompare=compare;
  document.getElementById("result").textContent=out;
- document.getElementById("status").textContent=prev?"Feedback-ul a fost comparat cu cea mai recentă evaluare anterioară.":"Primul feedback pentru acest chatter.";
+ document.getElementById("status").textContent=prev?"Feedback-ul ține cont doar de observațiile tale și de evaluarea anterioară.":"Primul feedback pentru acest chatter.";
  renderTeams();renderProfiles();renderTimeline();
 }
 
+function renderProgressReview(p){
+ const box=document.getElementById("progressReview");
+ if(!p || p.feedbacks.length<3){box.innerHTML="";return}
+ const fs=[...p.feedbacks].sort((a,b)=>a.date.localeCompare(b.date)).slice(-3);
+ const texts=fs.map(f=>f.notes||"").join(" ").toLowerCase();
+ const pos=(texts.match(/mai bine|improvement|progres|evolu|mai sigur|mai ok|descurc/g)||[]).length;
+ const neg=(texts.match(/mai rău|mai rau|regres|stagne|aceleași probleme|aceleasi probleme|panicheaz|se pierde|blocheaz/g)||[]).length;
+ let trend="🟡 STABLE", cls="neutral", summary="Nu există suficiente semnale clare pentru o direcție.";
+ if(pos>neg){trend="🟢 IMPROVING";cls="goodtxt";summary="În ultimele 3 feedback-uri apar mai multe semnale de progres decât de regres."}
+ else if(neg>pos){trend="🔴 NEEDS ATTENTION";cls="badtxt";summary="În ultimele 3 feedback-uri apar mai multe probleme recurente decât semnale de progres."}
+ const dates=fs.map(f=>f.date).join(" → ");
+ box.innerHTML=`<div class="review"><h3>📊 Progress Review — ultimele 3 feedback-uri</h3><div class="trend ${cls}">${trend}</div><div class="reviewnote">${esc(summary)}<br>Perioadă: ${esc(dates)}</div><div class="reviewgrid"><div class="reviewitem"><b>Ce se repetă pozitiv</b>${esc(extractReviewPhrase(fs,true)||"Nu este menționat clar.")}</div><div class="reviewitem"><b>Ce se repetă negativ</b>${esc(extractReviewPhrase(fs,false)||"Nu este menționat clar.")}</div></div><div class="reviewnote">Analiza folosește exclusiv observațiile salvate în cele 3 feedback-uri. Nu adaugă skill-uri sau probleme care nu au fost menționate.</div></div>`;
+}
+function extractReviewPhrase(fs,positive){
+ const all=fs.flatMap(f=>sentences(f.notes||""));
+ const pats=positive?[/mai bine/i,/improvement/i,/progres/i,/evolu/i,/mai sigur/i,/receptiv/i,/descurc/i]:[/panicheaz/i,/se pierde/i,/blocheaz/i,/mai greu/i,/nevoie de/i,/lipsește/i,/lipseste/i,/problem/i,/trebuie/i];
+ const hits=all.filter(x=>pats.some(r=>r.test(x)));
+ if(!hits.length)return "";
+ return hits.slice(0,2).map(x=>x.replace(/[.!?]+$/,".")).join(" ");
+}
 function saveFeedback(){
  if(!generated){document.getElementById("status").textContent="Generează întâi feedback-ul.";return}
  const name=val("name"),team=val("team"),date=val("date")||today();
  let p=profile(name,team);
- if(!p){
-   const teamCount=data.profiles.filter(x=>x.team.toLowerCase()===team.toLowerCase()).length;
-   if(teamCount>=3){document.getElementById("status").textContent=`Echipa ${team} are deja 3 chatteri.`;return}
-   p={id:uid(),name,team,feedbacks:[]};data.profiles.push(p);currentId=p.id
- }
+ if(!p){p={id:uid(),name,team,feedbacks:[]};data.profiles.push(p);currentId=p.id}
  if(!data.teams.includes(team))data.teams.push(team);
  const existing=p.feedbacks.find(f=>f.date===date);
  if(existing){if(!confirm("Există deja un feedback pentru această dată. Îl înlocuiești?"))return;Object.assign(existing,{result:generated,notes:val("notes"),potential:val("potential"),compare:generatedCompare})}
