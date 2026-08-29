@@ -359,16 +359,161 @@ function makeOutput(name,team,date,notes,potential,p,progressLabel){
 }
 
 function generate(){
-  const name=val("name"),team=val("team"),notes=val("notes"),date=val("date")||today(),potential=val("potential");
-  if(!name||!team||!notes){setStatus("Completează numele, echipa și observațiile.");return}
-  const p=profile(name,team);if(!p){setStatus("Adaugă mai întâi chatter-ul în echipă din butonul +.");return}
-  currentId=p.id;
-  const progress=p.feedbacks.length?"FOLLOW-UP SHADOWING":"FIRST SHADOWING";
-  const r=makeOutput(name,team,date,notes,potential,p,progress);
-  generated=r.out;
-  document.getElementById("result").textContent=generated;
-  setStatus("V15: observațiile sunt reformulate scurt și direct. Punctele pozitive nu sunt mutate la defecte și nu sunt inventate probleme.");
-  renderAll();
+ async function generate(){
+  const name = val("name");
+  const team = val("team");
+  const notes = val("notes");
+  const date = val("date") || today();
+  const potential = val("potential");
+
+  if(!name || !team || !notes){
+    setStatus("Completează numele, echipa și observațiile.");
+    return;
+  }
+
+  const p = profile(name, team);
+
+  if(!p){
+    setStatus("Adaugă mai întâi chatter-ul în echipă din butonul +.");
+    return;
+  }
+
+  currentId = p.id;
+
+  const previousFeedbacks = [...(p.feedbacks || [])]
+    .sort((a,b) => a.date.localeCompare(b.date))
+    .slice(-3);
+
+  const previousFeedback = previousFeedbacks.length
+    ? previousFeedbacks.map((f,i) => `
+FEEDBACK ${i + 1} — ${f.date}
+
+OBSERVAȚII:
+${f.notes || ""}
+
+REZULTAT:
+${f.result || ""}
+`).join("\n")
+    : "";
+
+  setStatus("AI analizează observațiile...");
+  document.getElementById("result").textContent =
+    "Se generează feedback-ul...";
+
+  try{
+    const response = await fetch(
+      `${SUPABASE_URL}/functions/v1/bright-action`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          name,
+          team,
+          date,
+          notes,
+          previousFeedback
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if(!response.ok){
+      throw new Error(
+        data?.error ||
+        data?.details ||
+        `Edge Function error (${response.status})`
+      );
+    }
+
+    if(!data?.success || !data?.result){
+      throw new Error(
+        data?.error || "AI-ul nu a returnat un rezultat valid."
+      );
+    }
+
+    const r = data.result;
+
+    const good = Array.isArray(r.good_points)
+      ? r.good_points.filter(Boolean).slice(0,3)
+      : [];
+
+    const weaknesses = Array.isArray(r.weaknesses)
+      ? r.weaknesses.filter(Boolean).slice(0,3)
+      : [];
+
+    const actions = Array.isArray(r.action_points)
+      ? r.action_points.filter(Boolean).slice(0,3)
+      : [];
+
+    while(good.length < 3){
+      good.push("Nu au fost identificate alte puncte pozitive clare.");
+    }
+
+    while(weaknesses.length < 3){
+      weaknesses.push("Nu au fost identificate alte probleme clare.");
+    }
+
+    while(actions.length < 3){
+      actions.push(
+        "Nu există alte acțiuni necesare fără a inventa informații."
+      );
+    }
+
+    let out = `SHADOWING FEEDBACK
+
+Nume: ${name}
+Echipă: ${team}
+Data: ${date}
+
+Overall:
+${r.overall || "Evaluare directă pe baza observațiilor disponibile."}
+
+📈 Progress: ${r.progress || "FIRST SHADOWING"}
+
+✅ 3 Puncte bune
+${good.map((x,i) => `${i + 1}. ${x}`).join("\n")}
+
+⚠️ 3 Defecte / puncte slabe
+${weaknesses.map((x,i) => `${i + 1}. ${x}`).join("\n")}
+
+🎯 3 Action Points
+${actions.map((x,i) => `${i + 1}. ${x}`).join("\n")}`;
+
+    if(potential){
+      out += `\n\n💰 Potential:
+• Target: ${potential}`;
+    }
+
+    generated = out.trim();
+
+    document.getElementById("result").textContent = generated;
+
+    setStatus(
+      "Feedback generat de AI. Verifică rezultatul înainte de Save Feedback."
+    );
+
+    renderAll();
+
+  }catch(error){
+    console.error("AI GENERATION ERROR:", error);
+
+    document.getElementById("result").textContent =
+      "Eroare la generarea feedback-ului.";
+
+    setStatus(
+      "Eroare: " +
+      (error instanceof Error
+        ? error.message
+        : "Eroare necunoscută.")
+    );
+  }
+}
+  
 }
 
 function reviewFromThree(fs){
