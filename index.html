@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>QC Shadowing Feedback V9</title>
+<title>QC Shadowing Feedback V12</title>
 <style>
 :root{--bg:#0d1117;--card:#151b24;--card2:#0b1016;--border:#293241;--text:#eef2f7;--muted:#9aa6b5;--blue:#7c9cff;--green:#35d07f;--yellow:#ffbd55;--red:#ff6577}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
@@ -14,7 +14,7 @@
 label{font-size:12px;font-weight:700;color:#cbd4df;display:block;margin:0 0 6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}
 textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}button{border:0;border-radius:8px;padding:9px 13px;background:#273149;color:#fff;font-weight:800;cursor:pointer}button.primary{background:var(--blue);color:#08101f}button.danger{background:#3b2029;color:#ffbdc6}button.ghost{background:transparent;border:1px solid var(--border)}
 .result{margin-top:14px;background:#090d12;border:1px solid var(--border);border-radius:10px;padding:17px;white-space:pre-wrap;font:13px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;min-height:280px}
-.timeline{margin-top:16px}.entry{border:1px solid var(--border);border-radius:10px;background:var(--card2);margin-top:9px;overflow:hidden}.entryhead{display:flex;justify-content:space-between;padding:11px 13px;background:#121923}.entryhead b{font-size:13px}.entryhead span{font-size:11px;color:var(--muted)}.entrybody{padding:12px}.entrybody pre{white-space:pre-wrap;margin:0;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}.compare{border-left:3px solid var(--blue);padding:8px 11px;margin-top:10px;color:#cbd5e5;font-size:12px}.review{border:1px solid var(--border);border-radius:10px;background:#101721;padding:13px;margin:10px 0 12px}.review h3{margin:0 0 8px;font-size:13px}.review .trend{font-weight:900;margin-bottom:8px}.reviewgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.reviewitem{background:#0b1016;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:11px}.reviewitem b{display:block;margin-bottom:3px}.reviewnote{color:var(--muted);font-size:11px;margin-top:9px}.goodtxt{color:var(--green)}.badtxt{color:var(--red)}.neutral{color:var(--yellow)}
+.timeline{margin-top:16px}.entry{border:1px solid var(--border);border-radius:10px;background:var(--card2);margin-top:9px;overflow:hidden}.entryhead{display:flex;justify-content:space-between;padding:11px 13px;background:#121923}.entryhead b{font-size:13px}.entryhead span{font-size:11px;color:var(--muted)}.entrybody{padding:12px}.entrybody pre{white-space:pre-wrap;margin:0;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}.compare{border-left:3px solid var(--blue);padding:8px 11px;margin-top:10px;color:#cbd5e5;font-size:12px}.review{border:1px solid var(--border);border-radius:10px;background:#101721;padding:13px;margin:10px 0 12px}.review h3{margin:0 0 8px;font-size:13px}.review .trend{font-weight:900;margin-bottom:8px}.reviewgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.reviewitem{background:#0b1016;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:11px}.reviewitem.full{grid-column:1/-1}.reviewitem b{display:block;margin-bottom:3px}.reviewnote{color:var(--muted);font-size:11px;margin-top:9px}.goodtxt{color:var(--green)}.badtxt{color:var(--red)}.neutral{color:var(--yellow)}
 .empty{color:var(--muted);font-size:13px;padding:10px 2px}.status{font-size:12px;color:var(--muted);margin-top:8px}
 @media(max-width:850px){.layout{grid-template-columns:1fr}.side{min-height:auto}.grid{grid-template-columns:1fr}.full{grid-column:auto}}
 </style>
@@ -22,7 +22,7 @@ textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:
 </head>
 <body>
 <div class="app">
- <div class="top"><div><h1>SHADOWING FEEDBACK V11</h1><p>QC history — fiecare chatter are propriul profil și timeline.</p></div></div>
+ <div class="top"><div><h1>SHADOWING FEEDBACK V12</h1><p>QC history — fiecare chatter are propriul profil și timeline.</p></div></div>
  <div class="layout">
   <aside class="card side">
    <div class="sidehead"><b>Chatter History</b><span class="count" id="count">0</span></div>
@@ -43,7 +43,7 @@ textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:
      <div><label>Data feedback</label><input id="date" type="date"></div>
      <div><label>Potential / target (opțional)</label><input id="potential" placeholder="ex. $800–$1k"></div>
      <div class="full"><label>Observațiile tale</label>
-      <textarea id="notes" placeholder="Scrie liber ce ai observat. Nu trebuie să fie profesional sau structurat. Tool-ul extrage ideile și le reformulează în termeni QC/OnlyFans."></textarea>
+      <textarea id="notes" placeholder="Scrie exact ce ai observat, chiar și foarte scurt. Tool-ul îl va comprima în feedback QC: direct, clar și exigent, fără să inventeze informații."></textarea>
      </div>
     </div>
     <div class="row">
@@ -232,51 +232,156 @@ function renderProfiles(){document.getElementById("profiles").innerHTML="";docum
 // SOURCE-ONLY GENERATOR.
 // It never creates facts such as sales, GFE, SCAMMING, skills or problems unless the user wrote them.
 // The generated feedback is a faithful formatting/condensation of the user's observations.
+function splitObservationText(text){
+  return String(text||"")
+    .replace(/\r/g,"")
+    .split(/\n+/)
+    .flatMap(x=>x.split(/(?<=[.!?])\s+|[;]+/))
+    .map(x=>x.replace(/^[•\-–—]\s*/,"").trim())
+    .filter(Boolean);
+}
+
+function compactObservation(s){
+  let x=cleanText(s);
+  const replacements=[
+    [/\bputin mai bine(?: decât| ca| fata de| față de) primul feedback\b/gi,"progres față de feedback-ul anterior"],
+    [/\bputin mai bine\b/gi,"ușoară îmbunătățire"],
+    [/\bmai bine\b/gi,"îmbunătățire"],
+    [/\bse misca mai ok\b/gi,"ritm mai bun"],
+    [/\bse mișcă mai ok\b/gi,"ritm mai bun"],
+    [/\bla vanzari este putin mai buna\b/gi,"vânzări: ușoară îmbunătățire"],
+    [/\bla vânzări este puțin mai bună\b/gi,"vânzări: ușoară îmbunătățire"],
+    [/\bse stapaneste mai bine conversatiile\b/gi,"conversații: control mai bun"],
+    [/\bse stăpânește mai bine conversațiile\b/gi,"conversații: control mai bun"],
+    [/\bse descurca mai bine\b/gi,"execuție mai bună"],
+    [/\bse descurcă mai bine\b/gi,"execuție mai bună"],
+    [/\bnu se descurca\b/gi,"execuție slabă"],
+    [/\bnu se descurcă\b/gi,"execuție slabă"],
+    [/\bnu reuseste\b/gi,"nu reușește"],
+    [/\bnu reușește\b/gi,"nu reușește"],
+    [/\bare nevoie de mai multa practica\b/gi,"necesită mai multă practică"],
+    [/\bare nevoie de mai multă practică\b/gi,"necesită mai multă practică"],
+    [/\btrebuie sa\b/gi,"trebuie să"],
+    [/\btrebuie să\b/gi,"trebuie să"]
+  ];
+  for(const [rx,to] of replacements)x=x.replace(rx,to);
+
+  // Remove filler without changing the factual meaning.
+  x=x.replace(/\bgen\b/gi,"")
+     .replace(/\bcam\b/gi,"")
+     .replace(/\bpractic\b/gi,"")
+     .replace(/\bdeci\b/gi,"")
+     .replace(/\bcred ca\b/gi,"")
+     .replace(/\bcred că\b/gi,"")
+     .replace(/\bse pare ca\b/gi,"")
+     .replace(/\bse pare că\b/gi,"")
+     .replace(/\bun pic\b/gi,"ușor")
+     .replace(/\bputin\b/gi,"puțin")
+     .replace(/\bpuțin\b/gi,"puțin")
+     .replace(/\s*[,;:]\s*/g,", ")
+     .replace(/\s+/g," ")
+     .trim();
+
+  // Keep it short: if the sentence is long, retain the most informative clauses.
+  const parts=x.split(/\s*,\s*/).map(cleanText).filter(Boolean);
+  if(parts.length>2){
+    x=parts.slice(0,2).join(", ");
+  }
+  if(x.length>150)x=x.slice(0,147).replace(/\s+\S*$/,"")+"…";
+  return x.charAt(0).toUpperCase()+x.slice(1);
+}
+
+function classifyObservation(s){
+  const low=s.toLowerCase();
+  const negative=/\b(rău|rau|slab|problem|panicheaz|se pierde|uită|uita|nu reuș|nu reus|nevoie de|mai trebuie|dead end|complicat|dificil|greș|gres|lipsește|lipseste|nu poate|nu știe|nu stie|stagne|regres|încurc|incurc|ezit|ezită|lent|haotic|neatent)\b/.test(low);
+  const positive=/\b(bun|bine|calumea|pozitiv|sigur|încreder|descurc|evolu|progres|receptiv|ajutat|ușor|usor|singur|singură|sigură|direcție bună|directie buna|foarte bun|mai bine|mai sigur|ritm mai bun|control mai bun|îmbunătățire)\b/.test(low);
+  const action=/\b(trebuie|nevoie de|continu|lucr|ajut|practice|practică|practica|învăț|invat|corect|urmăr|urmar|cu timpul|focus|atenție|atentie)\b/.test(low);
+  return {negative,positive,action};
+}
+
 function generate(){
   const name=val("name"),team=val("team"),notes=val("notes"),date=val("date")||today(),potential=val("potential");
   if(!name||!team||!notes){setStatus("Completează numele, echipa și observațiile.");return}
   const p=profile(name,team);if(!p){setStatus("Adaugă mai întâi chatter-ul în echipă din butonul +.");return}
   currentId=p.id;
-  const lines=sentences(notes);
-  const positives=[],improvements=[],actions=[];
-  for(const line of lines){
-    const low=line.toLowerCase();
-    // We only classify a sentence when its own wording clearly indicates it.
-    if(/bun|bine|calumea|pozitiv|sigur|încreder|descurc|evolu|progres|receptiv|ajutat|ușor|usor|mai puțin ajutor|mai putin ajutor|singur|singură|singura|sigură|sigura|direcție bună|directie buna|foarte bun|mai bine/.test(low)) positives.push(line);
-    if(/rău|rau|problem|panicheaz|se pierde|uită|uita|nu reuș|nu reus|nevoie de|mai trebuie|dead end|complicat|dificil|greș|gres|lipsește|lipseste|mai puțin|mai putin|nu poate|nu știe|nu stie/.test(low)) improvements.push(line);
-    if(/trebuie|nevoie de|continu|lucr|ajut|practice|practică|practica|învăț|invat|corect|urmăr|urmar|cu timpul/.test(low)) actions.push(line);
+
+  const lines=splitObservationText(notes);
+  const positives=[],negatives=[],actions=[];
+
+  for(const raw of lines){
+    const item=compactObservation(raw);
+    if(!item)continue;
+    const c=classifyObservation(item);
+    if(c.negative)negatives.push(item);
+    if(c.positive&&!c.negative)positives.push(item);
+    if(c.action)actions.push(item);
   }
+
   const unique=a=>[...new Set(a)];
-  const good=unique(positives).slice(0,4), bad=unique(improvements).slice(0,4), act=unique(actions).slice(0,4);
-  let overall="Evaluarea reflectă strict observațiile introduse pentru această sesiune.";
-  if(/mai bine|progres|evolu|mai sigur|mai puțin ajutor|mai putin ajutor|direcție bună|directie buna/.test(notes.toLowerCase())) overall="Din observațiile introduse reiese o direcție pozitivă în aspectele menționate.";
-  else if(/mai rău|mai rau|regres|stagne/.test(notes.toLowerCase())) overall="Din observațiile introduse reiese o direcție negativă în aspectele menționate.";
+  const good=unique(positives).slice(0,3);
+  const bad=unique(negatives).slice(0,3);
+  const act=unique(actions).slice(0,3);
+
+  const joined=lines.join(" ").toLowerCase();
+  let overall="Evaluare directă. Menține nivelul și corectează imediat punctele slabe.";
+  if(/mai rău|mai rau|regres|stagne|slab|problem|panicheaz|se pierde/.test(joined)){
+    overall="Progres insuficient. Problemele observate trebuie corectate, nu repetate.";
+  }else if(/mai bine|progres|evolu|mai sigur|îmbunătățire|ritm mai bun|control mai bun/.test(joined)){
+    overall="Există progres, dar standardul trebuie menținut și ridicat.";
+  }
+
   let progress=p.feedbacks.length?"FOLLOW-UP SHADOWING":"FIRST SHADOWING";
   let out=`SHADOWING FEEDBACK\n\nNume: ${name}\nEchipă: ${team}\nData: ${date}\n\nOverall:\n${overall}\n\n📈 Progress: ${progress}\n\n`;
-  if(good.length)out+=`✅ Puncte bune\n• ${good.join("\n• ")}\n\n`;
-  if(bad.length)out+=`⚠️ De îmbunătățit\n• ${bad.join("\n• ")}\n\n`;
-  if(act.length)out+=`🎯 Action Point\n• ${act.join("\n• ")}\n`;
-  if(!good.length&&!bad.length&&!act.length)out+=`📝 Observații\n• ${lines.join("\n• ")}\n`;
+
+  if(good.length)out+=`✅ Ce merge\n• ${good.join("\n• ")}\n\n`;
+  if(bad.length)out+=`⚠️ Probleme\n• ${bad.join("\n• ")}\n\n`;
+  if(act.length)out+=`🎯 Ce trebuie corectat\n• ${act.join("\n• ")}\n`;
+  if(!good.length&&!bad.length&&!act.length){
+    out+=`📝 Observații\n• ${lines.map(compactObservation).slice(0,3).join("\n• ")}\n`;
+  }
   if(potential)out+=`\n💰 Potential:\n• Target: ${potential}`;
-  generated=out;document.getElementById("result").textContent=out;setStatus("Generatorul folosește exclusiv textul introdus de tine. Nu completează cu informații externe.");renderAll();
+
+  generated=out.trim();
+  document.getElementById("result").textContent=generated;
+  setStatus("Feedback-ul a fost comprimat și reformulat strict din observațiile tale. Nu sunt adăugate fapte noi.");
+  renderAll();
 }
 
 function reviewFromThree(fs){
   const notes=fs.map(f=>f.notes||"").filter(Boolean);
-  const joined=notes.join(" ").toLowerCase();
-  const positive=notes.flatMap(sentences).filter(x=>/mai bine|progres|evolu|mai sigur|mai puțin ajutor|mai putin ajutor|direcție bună|directie buna|pozitiv|descurc/.test(x.toLowerCase()));
-  const negative=notes.flatMap(sentences).filter(x=>/mai rău|mai rau|regres|stagne|panicheaz|se pierde|uită|uita|problem|nevoie de|mai trebuie|dead end|dificil|complicat/.test(x.toLowerCase()));
-  let trend="🟡 STABLE",cls="neutral",summary="Cele 3 feedback-uri nu conțin suficiente formulări comparative clare pentru a declara o direcție.";
-  if(/mai rău|mai rau|regres|stagne/.test(joined) && !/mai bine|progres|evolu|mai sigur/.test(joined)){trend="🔴 NEEDS ATTENTION";cls="badtxt";summary="În cele 3 feedback-uri sunt menționate semnale negative explicite."}
-  else if(/mai bine|progres|evolu|mai sigur|mai puțin ajutor|mai putin ajutor/.test(joined) && !/mai rău|mai rau|regres|stagne/.test(joined)){trend="🟢 IMPROVING";cls="goodtxt";summary="În cele 3 feedback-uri sunt menționate semnale explicite de progres."}
-  return {trend,cls,summary,positive,negative};
+  const items=notes.flatMap(splitObservationText);
+  const compact=items.map(compactObservation).filter(Boolean);
+  const joined=items.join(" ").toLowerCase();
+
+  const negative=compact.filter(x=>classifyObservation(x).negative);
+  const positive=compact.filter(x=>classifyObservation(x).positive&&!classifyObservation(x).negative);
+  const actions=compact.filter(x=>classifyObservation(x).action);
+
+  let trend="🟡 STABLE",cls="neutral",summary="Nu există suficiente dovezi clare de progres sau regres în ultimele 3 feedback-uri.";
+  if(/mai rău|mai rau|regres|stagne|slab|panicheaz|se pierde/.test(joined) &&
+     !/mai bine|progres|evolu|îmbunătățire|ritm mai bun|control mai bun/.test(joined)){
+    trend="🔴 NEEDS ATTENTION";cls="badtxt";
+    summary="Progres insuficient. Problemele repetate trebuie corectate imediat.";
+  }else if(/mai bine|progres|evolu|mai sigur|îmbunătățire|ritm mai bun|control mai bun/.test(joined)){
+    trend="🟢 IMPROVING";cls="goodtxt";
+    summary="Există progres, dar standardul trebuie menținut și ridicat.";
+  }
+
+  return {
+    trend,cls,summary,
+    positive:[...new Set(positive)].slice(0,2),
+    negative:[...new Set(negative)].slice(0,2),
+    actions:[...new Set(actions)].slice(0,2)
+  };
 }
+
 function renderProgressReview(p){
   const box=document.getElementById("progressReview");if(!p||p.feedbacks.length<3){box.innerHTML="";return}
   const fs=[...p.feedbacks].sort((a,b)=>a.date.localeCompare(b.date)).slice(-3),r=reviewFromThree(fs),dates=fs.map(f=>f.date).join(" → ");
-  const pos=r.positive.slice(0,2).join(" ")||"Nu este menționat clar în cele 3 feedback-uri.";
-  const neg=r.negative.slice(0,2).join(" ")||"Nu este menționat clar în cele 3 feedback-uri.";
-  box.innerHTML=`<div class="review"><h3>📊 Progress Review — ultimele 3 feedback-uri</h3><div class="trend ${r.cls}">${r.trend}</div><div class="reviewnote">${esc(r.summary)}<br>Perioadă: ${esc(dates)}</div><div class="reviewgrid"><div class="reviewitem"><b>Semnale pozitive găsite</b>${esc(pos)}</div><div class="reviewitem"><b>Semnale negative găsite</b>${esc(neg)}</div></div><div class="reviewnote">Review-ul este calculat exclusiv din observațiile scrise în aceste 3 feedback-uri. Dacă ceva nu a fost menționat, nu este inventat.</div></div>`;
+  const pos=r.positive.join(" ")||"Niciun progres clar menționat.";
+  const neg=r.negative.join(" ")||"Nicio problemă clar menționată.";
+  const act=r.actions.join(" ")||"Nicio acțiune clară menționată.";
+  box.innerHTML=`<div class="review"><h3>📊 Progress Review — ultimele 3 feedback-uri</h3><div class="trend ${r.cls}">${r.trend}</div><div class="reviewnote">${esc(r.summary)}<br>Perioadă: ${esc(dates)}</div><div class="reviewgrid"><div class="reviewitem"><b>Ce s-a îmbunătățit</b>${esc(pos)}</div><div class="reviewitem"><b>Ce rămâne problematic</b>${esc(neg)}</div><div class="reviewitem full"><b>Ce trebuie corectat</b>${esc(act)}</div></div><div class="reviewnote">Analiza folosește exclusiv observațiile din aceste 3 feedback-uri. Nu presupune rezultate, vânzări sau probleme care nu au fost menționate.</div></div>`;
 }
 
 async function saveFeedback(){
