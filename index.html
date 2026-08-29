@@ -96,7 +96,7 @@ async function loadRemote(){
   if(!sb){setStatus("Supabase nu este configurat. Completează URL + Publishable/Anon Key în fișier.");return false}
   const [{data:teams,error:te},{data:chatters,error:ce}]=await Promise.all([
     sb.from("teams").select("id,name,created_at").order("created_at",{ascending:true}),
-    sb.from("chatters").select("id,name,team_id,created_at,updated_at").order("created_at",{ascending:true})
+    sb.from("chatters").select("id,name,team_id,created_at").order("created_at",{ascending:true})
   ]);
   if(te||ce){console.error(te||ce);setStatus("Nu pot încărca echipele/chatterii din Supabase: "+(te?.message||ce?.message||"eroare"));return false}
   const teamMap=new Map((teams||[]).map(t=>[t.id,t]));
@@ -163,7 +163,7 @@ async function editProfile(id){
   const newName=prompt("Modifică numele chatter-ului:",p.name);if(newName===null)return;
   const clean=newName.trim();if(!clean||clean===p.name)return;
   if(data.profiles.some(x=>x.id!==id&&x.name.toLowerCase()===clean.toLowerCase()&&x.team===p.team)){alert("Există deja acest chatter în echipă.");return}
-  const {error}=await sb.from("chatters").update({name:clean,updated_at:new Date().toISOString()}).eq("id",id);
+  const {error}=await sb.from("chatters").update({name:clean}).eq("id",id);
   if(error){alert("Nu am putut modifica numele: "+error.message);return}
   await loadRemote();currentId=id;renderAll();setStatus("Numele chatter-ului a fost actualizat pentru toată echipa.");
 }
@@ -175,7 +175,7 @@ async function saveProfileTeam(){
   const teamId=await getTeamId(target);if(!teamId)return false;
   if(target!==p.team&&data.profiles.filter(x=>x.team===target).length>=3){setStatus("Echipa aleasă este deja 3/3.");return false}
   if(data.profiles.some(x=>x.id!==p.id&&x.name.toLowerCase()===name.toLowerCase()&&x.team===target)){setStatus("Există deja acest chatter în echipă.");return false}
-  const {error}=await sb.from("chatters").update({name,team_id:teamId,updated_at:new Date().toISOString()}).eq("id",p.id);
+  const {error}=await sb.from("chatters").update({name,team_id:teamId}).eq("id",p.id);
   if(error){setStatus("Eroare la actualizare: "+error.message);return false}
   await loadRemote();currentId=p.id;renderAll();setStatus("Profil actualizat pentru toată echipa.");return true;
 }
@@ -200,7 +200,7 @@ async function deleteTeam(name){
   let un=await sb.from("teams").select("id").eq("name","Unassigned").maybeSingle();
   if(!un.data){const c=await sb.from("teams").insert({name:"Unassigned"}).select("id").single();if(c.error){alert(c.error.message);return}un.data=c.data}
   const old=await sb.from("teams").select("id").eq("name",name).single();if(old.error)return;
-  if(members.length){const r=await sb.from("chatters").update({team_id:un.data.id,updated_at:new Date().toISOString()}).eq("team_id",old.data.id);if(r.error){alert(r.error.message);return}}
+  if(members.length){const r=await sb.from("chatters").update({team_id:un.data.id}).eq("team_id",old.data.id);if(r.error){alert(r.error.message);return}}
   const r=await sb.from("teams").delete().eq("id",old.data.id);if(r.error){alert(r.error.message);return}
   await loadRemote();if(currentTeam===name)currentTeam="ALL";renderAll();
 }
