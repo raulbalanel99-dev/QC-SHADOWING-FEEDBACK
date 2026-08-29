@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>QC Shadowing Feedback V12</title>
+<title>QC Shadowing Feedback V14</title>
 <style>
 :root{--bg:#0d1117;--card:#151b24;--card2:#0b1016;--border:#293241;--text:#eef2f7;--muted:#9aa6b5;--blue:#7c9cff;--green:#35d07f;--yellow:#ffbd55;--red:#ff6577}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
@@ -22,7 +22,7 @@ textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:
 </head>
 <body>
 <div class="app">
- <div class="top"><div><h1>SHADOWING FEEDBACK V12</h1><p>QC history — fiecare chatter are propriul profil și timeline.</p></div></div>
+ <div class="top"><div><h1>SHADOWING FEEDBACK V14</h1><p>QC history — fiecare chatter are propriul profil și timeline.</p></div></div>
  <div class="layout">
   <aside class="card side">
    <div class="sidehead"><b>Chatter History</b><span class="count" id="count">0</span></div>
@@ -71,7 +71,7 @@ textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:
 </div>
 
 <script>
-// SHADOWING FEEDBACK V11 — Supabase shared database
+// SHADOWING FEEDBACK V14 — Supabase shared database
 // IMPORTANT: add your Supabase Project URL and Publishable/Anon key below.
 const SUPABASE_URL = "https://upxqwegmzypiqvuskxbq.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_40WLnJy6EASmv2bFQo4JAA_-kZVt-VT";
@@ -230,6 +230,7 @@ function selectTeam(team){currentTeam=currentTeam===team&&team!=="ALL"?"ALL":tea
 function renderProfiles(){document.getElementById("profiles").innerHTML="";document.getElementById("count").textContent=data.profiles.length}
 
 // V14 QC GENERATOR — strict source-based condensation.
+// V14 ACTIVE BUILD
 // Rules:
 // 1) Never turn a positive observation into a defect just because it contains a negation such as "nu este copleșită".
 // 2) Keep good points, weaknesses and action points in separate buckets.
