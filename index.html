@@ -497,7 +497,13 @@ ${actions.map((x,i) => `${i + 1}. ${x}`).join("\n")}`;
       "Feedback generat de AI. Verifică rezultatul înainte de Save Feedback."
     );
 
-    renderAll();
+        generated = out.trim();
+
+    document.getElementById("result").textContent = generated;
+
+    setStatus(
+      "Feedback generat de AI. Verifică rezultatul înainte de Save Feedback."
+    );
 
   }catch(error){
     console.error("AI GENERATION ERROR:", error);
