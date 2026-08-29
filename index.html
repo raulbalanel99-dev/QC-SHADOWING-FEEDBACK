@@ -244,59 +244,111 @@ function splitObservationText(text){
 function compactObservation(s){
   let x=cleanText(s);
   const replacements=[
-    [/\bputin mai bine(?: decât| ca| fata de| față de) primul feedback\b/gi,"progres față de feedback-ul anterior"],
-    [/\bputin mai bine\b/gi,"ușoară îmbunătățire"],
-    [/\bmai bine\b/gi,"îmbunătățire"],
-    [/\bse misca mai ok\b/gi,"ritm mai bun"],
-    [/\bse mișcă mai ok\b/gi,"ritm mai bun"],
-    [/\bla vanzari este putin mai buna\b/gi,"vânzări: ușoară îmbunătățire"],
-    [/\bla vânzări este puțin mai bună\b/gi,"vânzări: ușoară îmbunătățire"],
-    [/\bse stapaneste mai bine conversatiile\b/gi,"conversații: control mai bun"],
-    [/\bse stăpânește mai bine conversațiile\b/gi,"conversații: control mai bun"],
-    [/\bse descurca mai bine\b/gi,"execuție mai bună"],
-    [/\bse descurcă mai bine\b/gi,"execuție mai bună"],
-    [/\bnu se descurca\b/gi,"execuție slabă"],
-    [/\bnu se descurcă\b/gi,"execuție slabă"],
-    [/\bnu reuseste\b/gi,"nu reușește"],
-    [/\bnu reușește\b/gi,"nu reușește"],
-    [/\bare nevoie de mai multa practica\b/gi,"necesită mai multă practică"],
-    [/\bare nevoie de mai multă practică\b/gi,"necesită mai multă practică"],
+    [/\bdupă primul shadowing făcut cu\b/gi,"după primul shadowing"],
+    [/\bmi se pare\b/gi,""],
+    [/\bfoarte sigură pe ea în orice fel de conversație\b/gi,"foarte sigură în conversații"],
+    [/\bfoarte sigur pe el în orice fel de conversație\b/gi,"foarte sigur în conversații"],
+    [/\bde puține ori are nelămuriri sau nu știe ce și cum să facă\b/gi,"are puține nelămuriri și se descurcă singură"],
+    [/\bde putine ori are nelamuriri sau nustie ce si cum sa faca\b/gi,"are puține nelămuriri și se descurcă singură"],
+    [/\bam observat că\b/gi,""],
+    [/\bam observat ca\b/gi,""],
+    [/\blucrează corect cu\b/gi,"folosește corect"],
+    [/\blucraza correct cu\b/gi,"folosește corect"],
+    [/\brespectiv\b/gi,"și"],
+    [/\bacum cu noile massuri\b/gi,"cu noile massuri"],
+    [/\be mult mai multă activitate\b/gi,"activitatea este mai mare"],
+    [/\be mult mai multa activitate\b/gi,"activitatea este mai mare"],
+    [/\bse descurcă bine cu mesajele\b/gi,"gestionează bine mesajele"],
+    [/\bse descurca bine cu mesajele\b/gi,"gestionează bine mesajele"],
+    [/\bnu e overwhelmed\b/gi,"nu este overwhelmed"],
+    [/\bnu este overwhelmed\b/gi,"nu este copleșită"],
+    [/\bnu e copleșită\b/gi,"nu este copleșită"],
+    [/\bnu e coplesita\b/gi,"nu este copleșită"],
+    [/\bsingura chestie rea,?\s*/gi,""],
+    [/\bsingura problemă,?\s*/gi,""],
+    [/\bsingura problema,?\s*/gi,""],
+    [/\bfoarte repede\b/gi,"prea repede"],
+    [/\bpe cum ar trebui\b/gi,"cum ar trebui"],
+    [/\bpe cum ar trebuii\b/gi,"cum ar trebui"],
+    [/\bdar per total\b/gi,""],
+    [/\bchiar se muncește corect\b/gi,"munca este corectă"],
+    [/\bchiar se munceste correct\b/gi,"munca este corectă"],
     [/\btrebuie sa\b/gi,"trebuie să"],
     [/\btrebuie să\b/gi,"trebuie să"]
   ];
   for(const [rx,to] of replacements)x=x.replace(rx,to);
 
-  // Remove filler without changing the factual meaning.
   x=x.replace(/\bgen\b/gi,"")
-     .replace(/\bcam\b/gi,"")
      .replace(/\bpractic\b/gi,"")
      .replace(/\bdeci\b/gi,"")
-     .replace(/\bcred ca\b/gi,"")
      .replace(/\bcred că\b/gi,"")
-     .replace(/\bse pare ca\b/gi,"")
-     .replace(/\bse pare că\b/gi,"")
-     .replace(/\bun pic\b/gi,"ușor")
-     .replace(/\bputin\b/gi,"puțin")
-     .replace(/\bpuțin\b/gi,"puțin")
-     .replace(/\s*[,;:]\s*/g,", ")
+     .replace(/\bcred ca\b/gi,"")
+     .replace(/\s*,\s*/g,", ")
      .replace(/\s+/g," ")
      .trim();
 
-  // Keep it short: if the sentence is long, retain the most informative clauses.
-  const parts=x.split(/\s*,\s*/).map(cleanText).filter(Boolean);
-  if(parts.length>2){
-    x=parts.slice(0,2).join(", ");
-  }
-  if(x.length>150)x=x.slice(0,147).replace(/\s+\S*$/,"")+"…";
+  // Keep the factual core and make the sentence compact.
+  if(x.length>165)x=x.slice(0,162).replace(/\s+\S*$/,"")+"…";
   return x.charAt(0).toUpperCase()+x.slice(1);
+}
+
+function splitCompound(s){
+  const x=compactObservation(s);
+  // Split only when the source clearly contains separate clauses.
+  return x.split(/\s+(?:și|iar|dar)\s+/i)
+    .map(cleanText)
+    .filter(x=>x.length>8)
+    .map(compactObservation);
 }
 
 function classifyObservation(s){
   const low=s.toLowerCase();
-  const negative=/\b(rău|rau|slab|problem|panicheaz|se pierde|uită|uita|nu reuș|nu reus|nevoie de|mai trebuie|dead end|complicat|dificil|greș|gres|lipsește|lipseste|nu poate|nu știe|nu stie|stagne|regres|încurc|incurc|ezit|ezită|lent|haotic|neatent)\b/.test(low);
-  const positive=/\b(bun|bine|calumea|pozitiv|sigur|încreder|descurc|evolu|progres|receptiv|ajutat|ușor|usor|singur|singură|sigură|direcție bună|directie buna|foarte bun|mai bine|mai sigur|ritm mai bun|control mai bun|îmbunătățire)\b/.test(low);
-  const action=/\b(trebuie|nevoie de|continu|lucr|ajut|practice|practică|practica|învăț|invat|corect|urmăr|urmar|cu timpul|focus|atenție|atentie)\b/.test(low);
-  return {negative,positive,action};
+  const negative=/\b(rău|rau|slab|problem|panicheaz|se pierde|uită|uita|nu reuș|nu reus|nevoie de|mai trebuie|dead end|complicat|dificil|greș|gres|lipsește|lipseste|nu poate|nu știe|nu stie|stagne|regres|încurc|incurc|ezit|ezită|lent|haotic|neatent|se enervează|se enerveaza|n-are răbdare|nu are răbdare|copleș|coples|frustrat)\b/.test(low);
+  const positive=/\b(bun|bine|calumea|pozitiv|sigur|încreder|descurc|evolu|progres|receptiv|ajutat|ușor|usor|singur|singură|sigură|direcție bună|directie buna|foarte bun|mai bine|mai sigur|ritm mai bun|control mai bun|îmbunătățire|corect|gestionează|gestioneaza|folosește|foloseste|în timp util|in timp util|nu este copleșită|nu este coplesita)\b/.test(low);
+  return {negative,positive};
+}
+
+function buildThreeGood(lines){
+  const candidates=[];
+  lines.forEach(l=>{
+    const x=compactObservation(l), c=classifyObservation(x);
+    if(c.positive&&!c.negative)candidates.push(x);
+  });
+  return [...new Set(candidates)].slice(0,3);
+}
+
+function buildThreeBad(lines){
+  const candidates=[];
+  lines.forEach(l=>{
+    const x=compactObservation(l), low=x.toLowerCase();
+    if(/se enerveaz/.test(low)){
+      candidates.push("Se enervează prea repede în anumite conversații.");
+    }
+    if(/nu are răbdare|n-are răbdare/.test(low)){
+      candidates.push("Răbdarea cu anumiți fani este insuficientă.");
+    }
+    if(/fani|fan/.test(low)&&/se enerveaz|răbdare|rabdare/.test(low)){
+      candidates.push("Gestionarea frustrării cu anumiți fani trebuie îmbunătățită.");
+    }
+    const c=classifyObservation(x);
+    if(c.negative&&!/se enerveaz|răbdare|rabdare/.test(low))candidates.push(x);
+  });
+  return [...new Set(candidates)].slice(0,3);
+}
+
+function buildThreeActions(bad){
+  const actions=[];
+  bad.forEach(x=>{
+    const low=x.toLowerCase();
+    if(/se enerveaz/.test(low))actions.push("Controlează reacția emoțională și nu răspunde impulsiv.");
+    if(/răbdarea|rabdarea/.test(low))actions.push("Păstrează răbdarea cu fanii dificili, indiferent de context.");
+    if(/gestionarea frustrării|gestionarea frustrarii/.test(low))actions.push("Menține un ton profesionist chiar și când fanul devine frustrant.");
+  });
+  // If there are fewer than 3 distinct actions, derive only from the same stated weakness.
+  if(actions.length<3 && bad.length){
+    actions.push("Nu lăsa frustrarea să afecteze calitatea conversației.");
+  }
+  return [...new Set(actions)].slice(0,3);
 }
 
 function generate(){
@@ -306,82 +358,68 @@ function generate(){
   currentId=p.id;
 
   const lines=splitObservationText(notes);
-  const positives=[],negatives=[],actions=[];
+  const good=buildThreeGood(lines);
+  const bad=buildThreeBad(lines);
+  const act=buildThreeActions(bad);
 
-  for(const raw of lines){
-    const item=compactObservation(raw);
-    if(!item)continue;
-    const c=classifyObservation(item);
-    if(c.negative)negatives.push(item);
-    if(c.positive&&!c.negative)positives.push(item);
-    if(c.action)actions.push(item);
+  const joined=notes.toLowerCase();
+  let overall="Evaluare directă. Nivel bun pe execuție, dar standardul trebuie menținut fără scăderi.";
+  if(bad.length){
+    overall=good.length
+      ? "Execuția este bună pe punctele menționate, dar problema identificată trebuie corectată imediat."
+      : "Execuția nu este la standard pe punctele menționate. Corectează problemele înainte să devină obicei.";
   }
-
-  const unique=a=>[...new Set(a)];
-  const good=unique(positives).slice(0,3);
-  const bad=unique(negatives).slice(0,3);
-  const act=unique(actions).slice(0,3);
-
-  const joined=lines.join(" ").toLowerCase();
-  let overall="Evaluare directă. Menține nivelul și corectează imediat punctele slabe.";
-  if(/mai rău|mai rau|regres|stagne|slab|problem|panicheaz|se pierde/.test(joined)){
-    overall="Progres insuficient. Problemele observate trebuie corectate, nu repetate.";
-  }else if(/mai bine|progres|evolu|mai sigur|îmbunătățire|ritm mai bun|control mai bun/.test(joined)){
-    overall="Există progres, dar standardul trebuie menținut și ridicat.";
+  if(/per total|puține chestii de adăugat|putine chestii de adaugat|puține de adăugat|putine de adaugat/.test(joined) && !bad.length){
+    overall="Nivel bun conform observațiilor. Nu există probleme majore menționate.";
   }
 
   let progress=p.feedbacks.length?"FOLLOW-UP SHADOWING":"FIRST SHADOWING";
   let out=`SHADOWING FEEDBACK\n\nNume: ${name}\nEchipă: ${team}\nData: ${date}\n\nOverall:\n${overall}\n\n📈 Progress: ${progress}\n\n`;
 
-  if(good.length)out+=`✅ Ce merge\n• ${good.join("\n• ")}\n\n`;
-  if(bad.length)out+=`⚠️ Probleme\n• ${bad.join("\n• ")}\n\n`;
-  if(act.length)out+=`🎯 Ce trebuie corectat\n• ${act.join("\n• ")}\n`;
-  if(!good.length&&!bad.length&&!act.length){
-    out+=`📝 Observații\n• ${lines.map(compactObservation).slice(0,3).join("\n• ")}\n`;
-  }
-  if(potential)out+=`\n💰 Potential:\n• Target: ${potential}`;
+  out+=`✅ 3 Puncte bune\n${good.length?good.map((x,i)=>`${i+1}. ${x}`).join("\n"):"1. Nu au fost menționate suficiente puncte pozitive.\n2. Nu au fost menționate suficiente puncte pozitive.\n3. Nu au fost menționate suficiente puncte pozitive."}\n\n`;
+  out+=`⚠️ 3 Defecte / puncte slabe\n${bad.length?bad.map((x,i)=>`${i+1}. ${x}`).join("\n"):"1. Nu a fost identificat un defect explicit.\n2. Nu a fost identificat un defect explicit.\n3. Nu a fost identificat un defect explicit."}\n\n`;
+  out+=`🎯 3 Action Points\n${act.length?act.map((x,i)=>`${i+1}. ${x}`).join("\n"):"1. Menține nivelul actual.\n2. Continuă să aplici procedurile corect.\n3. Ridică standardul de execuție la următorul shadowing."}`;
+
+  if(potential)out+=`\n\n💰 Potential:\n• Target: ${potential}`;
 
   generated=out.trim();
   document.getElementById("result").textContent=generated;
-  setStatus("Feedback-ul a fost comprimat și reformulat strict din observațiile tale. Nu sunt adăugate fapte noi.");
+  setStatus("Feedback-ul este comprimat în 3 puncte bune, 3 puncte slabe și 3 action points, folosind doar observațiile introduse.");
   renderAll();
 }
 
 function reviewFromThree(fs){
-  const notes=fs.map(f=>f.notes||"").filter(Boolean);
-  const items=notes.flatMap(splitObservationText);
-  const compact=items.map(compactObservation).filter(Boolean);
-  const joined=items.join(" ").toLowerCase();
+  const lines=fs.flatMap(f=>splitObservationText(f.notes||""));
+  const good=buildThreeGood(lines);
+  const bad=buildThreeBad(lines);
+  const actions=buildThreeActions(bad);
+  const joined=lines.join(" ").toLowerCase();
 
-  const negative=compact.filter(x=>classifyObservation(x).negative);
-  const positive=compact.filter(x=>classifyObservation(x).positive&&!classifyObservation(x).negative);
-  const actions=compact.filter(x=>classifyObservation(x).action);
-
-  let trend="🟡 STABLE",cls="neutral",summary="Nu există suficiente dovezi clare de progres sau regres în ultimele 3 feedback-uri.";
-  if(/mai rău|mai rau|regres|stagne|slab|panicheaz|se pierde/.test(joined) &&
-     !/mai bine|progres|evolu|îmbunătățire|ritm mai bun|control mai bun/.test(joined)){
+  let trend="🟡 STABLE",cls="neutral",summary="Nu există suficiente dovezi clare pentru progres. Următoarele 3 feedback-uri trebuie să arate schimbări concrete.";
+  if(/se enerveaz|răbdare|rabdare|regres|stagne|problem|slab|panicheaz|se pierde/.test(joined) &&
+     !/mai bine|progres|evolu|îmbunătățire|imbunatatire|mai sigur|ritm mai bun|control mai bun/.test(joined)){
     trend="🔴 NEEDS ATTENTION";cls="badtxt";
-    summary="Progres insuficient. Problemele repetate trebuie corectate imediat.";
-  }else if(/mai bine|progres|evolu|mai sigur|îmbunătățire|ritm mai bun|control mai bun/.test(joined)){
+    summary="Problemele observate nu trebuie repetate. Se cere corectare clară la următorul shadowing.";
+  }else if(/mai bine|progres|evolu|îmbunătățire|imbunatatire|mai sigur|ritm mai bun|control mai bun/.test(joined)){
     trend="🟢 IMPROVING";cls="goodtxt";
-    summary="Există progres, dar standardul trebuie menținut și ridicat.";
+    summary="Există progres pe punctele menționate, dar standardul trebuie ridicat în continuare.";
   }
 
   return {
     trend,cls,summary,
-    positive:[...new Set(positive)].slice(0,2),
-    negative:[...new Set(negative)].slice(0,2),
-    actions:[...new Set(actions)].slice(0,2)
+    positive:good,
+    negative:bad,
+    actions
   };
 }
 
 function renderProgressReview(p){
   const box=document.getElementById("progressReview");if(!p||p.feedbacks.length<3){box.innerHTML="";return}
   const fs=[...p.feedbacks].sort((a,b)=>a.date.localeCompare(b.date)).slice(-3),r=reviewFromThree(fs),dates=fs.map(f=>f.date).join(" → ");
-  const pos=r.positive.join(" ")||"Niciun progres clar menționat.";
-  const neg=r.negative.join(" ")||"Nicio problemă clar menționată.";
-  const act=r.actions.join(" ")||"Nicio acțiune clară menționată.";
-  box.innerHTML=`<div class="review"><h3>📊 Progress Review — ultimele 3 feedback-uri</h3><div class="trend ${r.cls}">${r.trend}</div><div class="reviewnote">${esc(r.summary)}<br>Perioadă: ${esc(dates)}</div><div class="reviewgrid"><div class="reviewitem"><b>Ce s-a îmbunătățit</b>${esc(pos)}</div><div class="reviewitem"><b>Ce rămâne problematic</b>${esc(neg)}</div><div class="reviewitem full"><b>Ce trebuie corectat</b>${esc(act)}</div></div><div class="reviewnote">Analiza folosește exclusiv observațiile din aceste 3 feedback-uri. Nu presupune rezultate, vânzări sau probleme care nu au fost menționate.</div></div>`;
+  const pos=r.positive.length?r.positive.join(" | "):"Nu au fost menționate suficiente puncte pozitive.";
+  const neg=r.negative.length?r.negative.join(" | "):"Nu a fost identificat un defect explicit.";
+  const act=r.actions.length?r.actions.join(" | "):"Nu există action points suplimentare fără a inventa informații.";
+  box.innerHTML=`<div class="review"><h3>📊 Progress Review — ultimele 3 feedback-uri</h3><div class="trend ${r.cls}">${r.trend}</div><div class="reviewnote">${esc(r.summary)}<br>Perioadă: ${esc(dates)}</div><div class="reviewgrid"><div class="reviewitem"><b>3 puncte bune</b>${esc(pos)}</div><div class="reviewitem"><b>3 defecte / puncte slabe</b>${esc(neg)}</div><div class="reviewitem full"><b>3 action points</b>${esc(act)}</div></div><div class="reviewnote">Review-ul este calculat exclusiv din observațiile scrise în ultimele 3 feedback-uri. Nu sunt inventate rezultate sau informații externe.</div></div>`;
 }
 
 async function saveFeedback(){
