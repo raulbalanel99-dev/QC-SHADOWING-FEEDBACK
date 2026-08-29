@@ -18,10 +18,11 @@ textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:
 .empty{color:var(--muted);font-size:13px;padding:10px 2px}.status{font-size:12px;color:var(--muted);margin-top:8px}
 @media(max-width:850px){.layout{grid-template-columns:1fr}.side{min-height:auto}.grid{grid-template-columns:1fr}.full{grid-column:auto}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="app">
- <div class="top"><div><h1>SHADOWING FEEDBACK V9</h1><p>QC history — fiecare chatter are propriul profil și timeline.</p></div></div>
+ <div class="top"><div><h1>SHADOWING FEEDBACK V11</h1><p>QC history — fiecare chatter are propriul profil și timeline.</p></div></div>
  <div class="layout">
   <aside class="card side">
    <div class="sidehead"><b>Chatter History</b><span class="count" id="count">0</span></div>
@@ -48,6 +49,7 @@ textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:
     <div class="row">
       <button class="primary" onclick="generate()">Generează</button>
       <button onclick="saveFeedback()">Save Feedback</button>
+      <button class="ghost" onclick="saveProfileTeam()">Save Profile</button>
       <button class="ghost" onclick="clearForm()">Clear</button>
     </div>
     <div id="status" class="status"></div>
@@ -69,296 +71,249 @@ textarea{min-height:180px;resize:vertical;line-height:1.5}.row{display:flex;gap:
 </div>
 
 <script>
-const KEY="QC_SHADOWING_V9_DATA";
-const OLD_KEYS=["QC_SHADOWING_V8_DATA","QC_SHADOWING_V7_DATA"];
-let data=load(), currentId=null, currentTeam="ALL", generated="", generatedCompare="";
+// SHADOWING FEEDBACK V11 — Supabase shared database
+// IMPORTANT: add your Supabase Project URL and Publishable/Anon key below.
+const SUPABASE_URL = "https://upxqwegmzypiqvuskxbq.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_40WLnJy6EASmv2bFQo4JAA_-kZVt-VT";
+const sb = (SUPABASE_URL.startsWith("http") && !SUPABASE_URL.includes("PASTE_") && !SUPABASE_ANON_KEY.includes("PASTE_"))
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-function load(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(KEY)||"");
-    if(saved && Array.isArray(saved.profiles)) return normalize(saved);
-  }catch(e){}
-  for(const oldKey of OLD_KEYS){
-    try{
-      const old=JSON.parse(localStorage.getItem(oldKey)||"");
-      if(old && Array.isArray(old.profiles)){
-        const migrated=normalize(old);
-        localStorage.setItem(KEY,JSON.stringify(migrated));
-        return migrated;
-      }
-    }catch(e){}
-  }
-  return {profiles:[],teams:["Outlaws","Werewolves"]};
-}
-function normalize(d){
-  d.profiles=(d.profiles||[]).map(p=>({...p,name:p.name||"",team:p.team||"Unassigned",feedbacks:Array.isArray(p.feedbacks)?p.feedbacks:[]}));
-  let teams=Array.isArray(d.teams)?d.teams:[];
-  d.profiles.forEach(p=>{if(p.team && !teams.includes(p.team))teams.push(p.team)});
-  if(!teams.length) teams=["Outlaws","Werewolves"];
-  d.teams=[...new Set(teams.filter(Boolean))];
-  return d;
-}
-function persist(){localStorage.setItem(KEY,JSON.stringify(data))}
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+let data={teams:[],profiles:[]}, currentId=null, currentTeam="ALL", generated="";
+
+function uid(){return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function val(id){return document.getElementById(id).value.trim()}
-function set(id,v){document.getElementById(id).value=v||""}
+function set(id,v){document.getElementById(id).value=v??""}
 function today(){return new Date().toISOString().slice(0,10)}
-document.getElementById("date").value=today();
-
-function profile(name,team){
- return data.profiles.find(p=>p.name.toLowerCase()===name.toLowerCase()&&p.team.toLowerCase()===team.toLowerCase())
-}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "'":"&#039;"}[m]))}
+function escAttr(s){return String(s??"").replace(/\\/g,"\\\\").replace(/'/g,"\\'")}
+function setStatus(msg){document.getElementById("status").textContent=msg||""}
+function cleanText(s){return String(s||"").replace(/\s+/g," ").trim()}
+function sentences(text){return String(text||"").split(/\n+/).map(x=>x.trim()).filter(Boolean)}
 function getCurrent(){return data.profiles.find(p=>p.id===currentId)}
+function profile(name,team){return data.profiles.find(p=>p.name.toLowerCase()===name.toLowerCase()&&p.team.toLowerCase()===team.toLowerCase())}
+
+async function loadRemote(){
+  if(!sb){setStatus("Supabase nu este configurat. Completează URL + Publishable/Anon Key în fișier.");return false}
+  const [{data:teams,error:te},{data:chatters,error:ce}]=await Promise.all([
+    sb.from("teams").select("id,name,created_at").order("created_at",{ascending:true}),
+    sb.from("chatters").select("id,name,team_id,created_at,updated_at").order("created_at",{ascending:true})
+  ]);
+  if(te||ce){console.error(te||ce);setStatus("Nu pot încărca echipele/chatterii din Supabase: "+(te?.message||ce?.message||"eroare"));return false}
+  const teamMap=new Map((teams||[]).map(t=>[t.id,t]));
+  const ids=(chatters||[]).map(c=>c.id);
+  let feedbacks=[];
+  if(ids.length){
+    // IMPORTANT: these are the real columns in the existing feedbacks table.
+    const {data:f,error:fe}=await sb.from("feedbacks")
+      .select("chatter_id,team_id,feedback_date,observations,generated_feedback,created_at")
+      .in("chatter_id",ids)
+      .order("feedback_date",{ascending:true});
+    if(fe){console.error(fe);setStatus("Nu pot încărca feedback-urile: "+fe.message);return false}
+    feedbacks=f||[];
+  }
+  const by=new Map();(chatters||[]).forEach(c=>by.set(c.id,[]));
+  feedbacks.forEach(f=>by.get(f.chatter_id)?.push({date:f.feedback_date,notes:f.observations||"",result:f.generated_feedback||"",teamId:f.team_id||null,createdAt:f.created_at||null}));
+  data={
+    teams:(teams||[]).map(t=>t.name),
+    profiles:(chatters||[]).map(c=>({id:c.id,name:c.name,team:teamMap.get(c.team_id)?.name||"Unassigned",teamId:c.team_id,feedbacks:by.get(c.id)||[]}))
+  };
+  return true;
+}
+
+async function init(){
+  set("date",today());
+  if(!sb){renderAll();return}
+  await loadRemote();renderAll();setStatus("Datele sunt sincronizate cu baza comună.");
+}
+
+function renderAll(){renderTeams();renderProfiles();renderTimeline()}
 function newProfile(){
- currentId=null;clearForm();currentTeam="ALL";renderTeams();renderProfiles();renderTimeline();document.getElementById("name").focus();
- document.getElementById("status").textContent="New chatter — completează numele și echipa.";
+  const team=prompt("În ce echipă îl adaugi?\n\n"+data.teams.join("\n"));
+  if(!team)return;
+  const found=data.teams.find(t=>t.toLowerCase()===team.trim().toLowerCase());
+  if(found)addChatter(found);else alert("Echipa nu există. Creeaz-o din Manage Teams.");
 }
-function clearForm(){
- set("name","");set("team","");set("date",today());set("potential","");set("notes","");
- generated="";generatedCompare="";
- document.getElementById("result").textContent="Aici va apărea feedback-ul.";
- document.getElementById("status").textContent="";
-}
+function clearForm(){set("name","");set("team","");set("date",today());set("potential","");set("notes","");generated="";document.getElementById("result").textContent="Aici va apărea feedback-ul.";setStatus("")}
 function openProfile(id){
- currentId=id; const p=getCurrent(); if(!p)return;
- set("name",p.name);set("team",p.team);set("date",today());set("potential","");
- set("notes","");generated="";
- document.getElementById("result").textContent="Aici va apărea feedback-ul.";
- document.getElementById("status").textContent="Profil încărcat. Poți edita numele sau echipa și salva modificarea.";
- renderTeams();renderProfiles();renderTimeline();
+  currentId=id;const p=getCurrent();if(!p)return;
+  set("name",p.name);set("team",p.team);set("date",today());set("potential","");set("notes","");generated="";
+  document.getElementById("result").textContent="Aici va apărea feedback-ul.";setStatus("Profil încărcat. Scrie observațiile și apasă Generează.");renderAll();
 }
-function editProfile(id){
- const p=data.profiles.find(x=>x.id===id); if(!p)return;
- currentId=id; set("name",p.name); set("team",p.team); set("date",today()); set("potential",""); set("notes","");
- generated="";generatedCompare="";
- document.getElementById("result").textContent="Aici va apărea feedback-ul.";
- document.getElementById("status").textContent="Edit mode — modifică numele/echipa, apoi apasă Save Profile.";
- renderTeams();renderProfiles();renderTimeline();
- document.getElementById("name").focus();
+
+async function getTeamId(name){
+  const {data:t,error}=await sb.from("teams").select("id").eq("name",name).single();
+  if(error){alert("Nu am găsit echipa: "+error.message);return null}return t.id;
 }
-function saveProfile(){
- const p=getCurrent(), name=val("name"), team=val("team");
- if(!p){document.getElementById("status").textContent="Deschide un chatter existent pentru editare.";return}
- if(!name||!team){document.getElementById("status").textContent="Numele și echipa sunt obligatorii.";return}
- const duplicate=data.profiles.find(x=>x.id!==p.id && x.name.toLowerCase()===name.toLowerCase() && x.team.toLowerCase()===team.toLowerCase());
- if(duplicate){document.getElementById("status").textContent="Există deja un chatter cu acest nume în această echipă.";return}
- p.name=name; p.team=team;
- if(!data.teams.includes(team)) data.teams.push(team);
- persist();renderTeams();renderProfiles();renderTimeline();
- document.getElementById("status").textContent="Profil actualizat.";
+async function addChatter(teamName){
+  if(!sb){alert("Supabase nu este configurat în index.html.");return}
+  const team=data.teams.find(t=>t.toLowerCase()===teamName.toLowerCase());if(!team)return;
+  const members=data.profiles.filter(p=>p.team===team);
+  if(members.length>=3){alert(`Echipa ${team} are deja 3/3 chatteri.`);return}
+  const name=prompt(`Numele chatter-ului pentru ${team}:`);if(!name)return;
+  const clean=name.trim();if(!clean)return;
+  if(members.some(p=>p.name.toLowerCase()===clean.toLowerCase())){alert("Acest chatter există deja în echipă.");return}
+  const teamId=await getTeamId(team);if(!teamId)return;
+  const {error}=await sb.from("chatters").insert({name:clean,team_id:teamId});
+  if(error){alert("Nu am putut adăuga chatter-ul: "+error.message);return}
+  await loadRemote();currentTeam=team;renderAll();setStatus(`${clean} a fost adăugat în ${team}.`);
 }
-function addTeam(){
- const name=prompt("Nume echipă nouă:");
- if(!name)return;
- const clean=name.trim();
- if(!clean)return;
- if(data.teams.some(t=>t.toLowerCase()===clean.toLowerCase())){alert("Echipa există deja.");return}
- data.teams.push(clean);persist();currentTeam=clean;renderTeams();renderProfiles();
+async function editProfile(id){
+  if(!sb)return;
+  const p=data.profiles.find(x=>x.id===id);if(!p)return;
+  const newName=prompt("Modifică numele chatter-ului:",p.name);if(newName===null)return;
+  const clean=newName.trim();if(!clean||clean===p.name)return;
+  if(data.profiles.some(x=>x.id!==id&&x.name.toLowerCase()===clean.toLowerCase()&&x.team===p.team)){alert("Există deja acest chatter în echipă.");return}
+  const {error}=await sb.from("chatters").update({name:clean,updated_at:new Date().toISOString()}).eq("id",id);
+  if(error){alert("Nu am putut modifica numele: "+error.message);return}
+  await loadRemote();currentId=id;renderAll();setStatus("Numele chatter-ului a fost actualizat pentru toată echipa.");
 }
-function renameTeam(oldName){
- const next=prompt("Noul nume pentru echipa:",oldName);
- if(!next)return;
- const clean=next.trim();
- if(!clean || clean.toLowerCase()===oldName.toLowerCase())return;
- if(data.teams.some(t=>t.toLowerCase()===clean.toLowerCase())){alert("Există deja o echipă cu acest nume.");return}
- data.profiles.forEach(p=>{if(p.team===oldName)p.team=clean});
- data.teams=data.teams.map(t=>t===oldName?clean:t);
- if(currentTeam===oldName)currentTeam=clean;
- persist();renderTeams();renderProfiles();renderTimeline();
+async function saveProfileTeam(){
+  if(!sb)return false;
+  const p=getCurrent(),name=val("name"),team=val("team");if(!p){setStatus("Selectează un chatter existent.");return false}
+  if(!name||!team){setStatus("Numele și echipa sunt obligatorii.");return false}
+  const target=data.teams.find(t=>t.toLowerCase()===team.toLowerCase());if(!target){setStatus("Echipa nu există. Creeaz-o din Manage Teams.");return false}
+  const teamId=await getTeamId(target);if(!teamId)return false;
+  if(target!==p.team&&data.profiles.filter(x=>x.team===target).length>=3){setStatus("Echipa aleasă este deja 3/3.");return false}
+  if(data.profiles.some(x=>x.id!==p.id&&x.name.toLowerCase()===name.toLowerCase()&&x.team===target)){setStatus("Există deja acest chatter în echipă.");return false}
+  const {error}=await sb.from("chatters").update({name,team_id:teamId,updated_at:new Date().toISOString()}).eq("id",p.id);
+  if(error){setStatus("Eroare la actualizare: "+error.message);return false}
+  await loadRemote();currentId=p.id;renderAll();setStatus("Profil actualizat pentru toată echipa.");return true;
 }
-function deleteTeam(name){
- const members=data.profiles.filter(p=>p.team===name);
- const msg=members.length
-   ? `Echipa "${name}" are ${members.length} chatter${members.length===1?"":"i"}. Ștergerea echipei îi va muta la "Unassigned". Continui?`
-   : `Ștergi echipa "${name}"?`;
- if(!confirm(msg))return;
- data.profiles.forEach(p=>{if(p.team===name)p.team="Unassigned"});
- data.teams=data.teams.filter(t=>t!==name);
- if(!data.teams.includes("Unassigned"))data.teams.push("Unassigned");
- if(currentTeam===name)currentTeam="ALL";
- persist();renderTeams();renderProfiles();renderTimeline();
+async function addTeam(){
+  if(!sb)return;
+  const name=prompt("Nume echipă nouă:");if(!name)return;const clean=name.trim();if(!clean)return;
+  if(data.teams.some(t=>t.toLowerCase()===clean.toLowerCase())){alert("Echipa există deja.");return}
+  const {error}=await sb.from("teams").insert({name:clean});if(error){alert("Nu am putut crea echipa: "+error.message);return}
+  await loadRemote();currentTeam=clean;renderAll();
+}
+async function renameTeam(oldName){
+  if(!sb)return;
+  const next=prompt("Noul nume pentru echipă:",oldName);if(next===null)return;const clean=next.trim();if(!clean||clean.toLowerCase()===oldName.toLowerCase())return;
+  if(data.teams.some(t=>t.toLowerCase()===clean.toLowerCase())){alert("Există deja o echipă cu acest nume.");return}
+  const {data:t,error}=await sb.from("teams").select("id").eq("name",oldName).single();if(error){alert(error.message);return}
+  const r=await sb.from("teams").update({name:clean}).eq("id",t.id);if(r.error){alert(r.error.message);return}
+  await loadRemote();if(currentTeam===oldName)currentTeam=clean;renderAll();
+}
+async function deleteTeam(name){
+  if(!sb)return;
+  const members=data.profiles.filter(p=>p.team===name);const msg=members.length?`Echipa "${name}" are ${members.length} chatteri. Îi mut la Unassigned?`:`Ștergi echipa "${name}"?`;if(!confirm(msg))return;
+  let un=await sb.from("teams").select("id").eq("name","Unassigned").maybeSingle();
+  if(!un.data){const c=await sb.from("teams").insert({name:"Unassigned"}).select("id").single();if(c.error){alert(c.error.message);return}un.data=c.data}
+  const old=await sb.from("teams").select("id").eq("name",name).single();if(old.error)return;
+  if(members.length){const r=await sb.from("chatters").update({team_id:un.data.id,updated_at:new Date().toISOString()}).eq("team_id",old.data.id);if(r.error){alert(r.error.message);return}}
+  const r=await sb.from("teams").delete().eq("id",old.data.id);if(r.error){alert(r.error.message);return}
+  await loadRemote();if(currentTeam===name)currentTeam="ALL";renderAll();
 }
 function manageTeams(){
- const action=prompt("Scrie:\n1 = adaugă echipă\n2 = redenumește o echipă\n3 = șterge o echipă");
- if(action==="1")addTeam();
- else if(action==="2"){
-   const old=prompt("Echipa de redenumit:\n\n"+data.teams.join("\n"));
-   if(old && data.teams.includes(old))renameTeam(old);
-   else if(old)alert("Echipa nu a fost găsită.");
- }else if(action==="3"){
-   const old=prompt("Echipa de șters:\n\n"+data.teams.join("\n"));
-   if(old && data.teams.includes(old))deleteTeam(old);
-   else if(old)alert("Echipa nu a fost găsită.");
- }
+  const action=prompt("Scrie:\n1 = adaugă echipă\n2 = redenumește o echipă\n3 = șterge o echipă");
+  if(action==="1")addTeam();
+  else if(action==="2"){const old=prompt("Echipa de redenumit:\n\n"+data.teams.join("\n"));if(old){const found=data.teams.find(t=>t.toLowerCase()===old.trim().toLowerCase());if(found)renameTeam(found)}}
+  else if(action==="3"){const old=prompt("Echipa de șters:\n\n"+data.teams.join("\n"));if(old){const found=data.teams.find(t=>t.toLowerCase()===old.trim().toLowerCase());if(found)deleteTeam(found)}}
 }
 
 function renderTeams(){
- const box=document.getElementById("teams");
- const q=document.getElementById("search").value.toLowerCase();
- const teams=data.teams.filter(t=>t.toLowerCase().includes(q) || q==="");
- const rows=[{name:"ALL",label:"Toate echipele"}].concat(teams.map(t=>({name:t,label:t})));
- box.innerHTML=rows.map(x=>{
-   const count=x.name==="ALL" ? data.profiles.length : data.profiles.filter(p=>p.team===x.name).length;
-   return `<div class="teamrow ${currentTeam===x.name?'active':''}" onclick="selectTeam('${escAttr(x.name)}')">
-      <span><span class="teamname">${esc(x.label)}</span><span class="teamcount">${count}</span></span>
-      ${x.name!=="ALL"?`<span class="teamactions"><button class="ghost mini" onclick="event.stopPropagation();renameTeam('${escAttr(x.name)}')" title="Redenumește">✎</button><button class="danger mini" onclick="event.stopPropagation();deleteTeam('${escAttr(x.name)}')" title="Șterge">×</button></span>`:""}
-   </div>`;
- }).join("");
+  const box=document.getElementById("teams"),q=document.getElementById("search").value.toLowerCase();
+  const teams=data.teams.filter(t=>!q||t.toLowerCase().includes(q)||data.profiles.some(p=>p.team===t&&p.name.toLowerCase().includes(q)));
+  let html=`<div class="teamrow ${currentTeam==='ALL'?'active':''}" onclick="selectTeam('ALL')"><span><span class="teamname">Toate echipele</span><span class="teamcount">${data.profiles.length}</span></span></div>`;
+  for(const t of teams){
+    const members=data.profiles.filter(p=>p.team===t&&(!q||p.name.toLowerCase().includes(q)||t.toLowerCase().includes(q)));
+    const expanded=currentTeam===t;
+    html+=`<div class="teamrow ${expanded?'active':''}" onclick="selectTeam('${escAttr(t)}')"><span><span class="teamname">${esc(t)}</span><span class="teamcount">${members.length}/3</span></span><span class="teamactions"><button class="ghost mini" onclick="event.stopPropagation();addChatter('${escAttr(t)}')" title="Adaugă chatter">+</button><button class="ghost mini" onclick="event.stopPropagation();renameTeam('${escAttr(t)}')" title="Redenumește">✎</button><button class="danger mini" onclick="event.stopPropagation();deleteTeam('${escAttr(t)}')" title="Șterge">×</button></span></div>`;
+    if(expanded){
+      if(members.length){for(const p of members){html+=`<div class="profile ${p.id===currentId?'active':''}" style="margin-left:10px" onclick="openProfile('${p.id}')"><div class="profileline"><div><b>${esc(p.name)}</b><small>${esc(p.team)}</small></div><button class="ghost mini editbtn" onclick="event.stopPropagation();editProfile('${p.id}')">✎</button></div><span class="tag">${p.feedbacks.length} feedback${p.feedbacks.length===1?'':'-uri'}</span></div>`}}
+      if(members.length<3)html+=`<button class="ghost" style="width:calc(100% - 10px);margin:5px 0 7px 10px" onclick="addChatter('${escAttr(t)}')">+ Adaugă chatter (${members.length}/3)</button>`;
+    }
+  }
+  box.innerHTML=html;
 }
-function selectTeam(team){currentTeam=team;renderTeams();renderProfiles()}
-function renderProfiles(){
- const q=document.getElementById("search").value.toLowerCase(), box=document.getElementById("profiles");
- let ps=data.profiles.filter(p=>{
-   const text=(p.name+" "+p.team).toLowerCase();
-   const teamOk=currentTeam==="ALL" || p.team===currentTeam;
-   return teamOk && text.includes(q);
- }).sort((a,b)=>a.name.localeCompare(b.name));
- document.getElementById("count").textContent=data.profiles.length;
- if(!ps.length){box.innerHTML='<div class="empty">Niciun chatter în această selecție.</div>';return}
- box.innerHTML=ps.map(p=>`<div class="profile ${p.id===currentId?'active':''}" onclick="openProfile('${p.id}')">
-   <div class="profileline"><div><b>${esc(p.name)}</b><small>${esc(p.team)}</small></div>
-   <button class="ghost mini editbtn" onclick="event.stopPropagation();editProfile('${p.id}')">✎</button></div>
-   <span class="tag">${p.feedbacks.length} feedback${p.feedbacks.length===1?'':'uri'}</span>
- </div>`).join("");
-}
-function renderTimeline(){
- const p=getCurrent(), box=document.getElementById("timeline");
- if(!p){document.getElementById("timelineTitle").textContent="Istoric chatter";document.getElementById("timelineCount").textContent="";document.getElementById("progressReview").innerHTML="";box.innerHTML='<div class="empty">Selectează un chatter din stânga.</div>';return}
- document.getElementById("timelineTitle").textContent=`${p.name} — ${p.team}`;
- document.getElementById("timelineCount").textContent=`${p.feedbacks.length} evaluări`;
- renderProgressReview(p);
- if(!p.feedbacks.length){box.innerHTML='<div class="empty">Nu există feedback-uri încă.</div>';return}
- const fs=[...p.feedbacks].sort((a,b)=>b.date.localeCompare(a.date));
- box.innerHTML=fs.map((f,i)=>`<div class="entry"><div class="entryhead"><b>${esc(f.date)}</b><span>${i===fs.length-1?'FIRST / oldest':''}</span></div><div class="entrybody"><pre>${esc(f.result)}</pre>${f.compare?`<div class="compare">↗ ${esc(f.compare)}</div>`:''}</div></div>`).join("");
-}
+function selectTeam(team){currentTeam=currentTeam===team&&team!=="ALL"?"ALL":team;renderTeams();renderProfiles()}
+function renderProfiles(){document.getElementById("profiles").innerHTML="";document.getElementById("count").textContent=data.profiles.length}
 
-function cleanText(s){return String(s||"").replace(/\s+/g," ").trim()}
-function sentences(text){return cleanText(text).split(/(?<=[.!?])\s+|\n+/).map(cleanText).filter(Boolean)}
-function has(t, patterns){return patterns.some(x=>x.test(t))}
-function firstMatching(t, patterns){return patterns.find(x=>x.test(t))}
-
-// IMPORTANT: This generator is source-based. It only reformulates facts explicitly
-// present in the user's notes. It never adds OF terminology, problems or skills by itself.
+// SOURCE-ONLY GENERATOR.
+// It never creates facts such as sales, GFE, SCAMMING, skills or problems unless the user wrote them.
+// The generated feedback is a faithful formatting/condensation of the user's observations.
 function generate(){
- const name=val("name"),team=val("team"),notes=val("notes"),date=val("date")||today(),potential=val("potential");
- if(!name||!team||!notes){document.getElementById("status").textContent="Completează numele, echipa și observațiile.";return}
- let p=profile(name,team);
- if(!p){p={id:uid(),name,team,feedbacks:[]};data.profiles.push(p)}
- currentId=p.id;
- if(!data.teams.includes(team)){data.teams.push(team);persist()}
- const t=notes.toLowerCase();
- const prev=[...p.feedbacks].sort((a,b)=>b.date.localeCompare(a.date)).find(x=>x.date<date);
- const ss=sentences(notes);
-
- // Extract only what the user actually said. These rules are deliberately conservative.
- let good=[],bad=[],actions=[];
- const add=(arr,x)=>{if(x && !arr.includes(x))arr.push(x)};
- const src=(patterns)=>ss.find(x=>has(x.toLowerCase(),patterns));
-
- if(has(t,[/este receptiv/,/foarte receptiv/,/ascultă ce/,/asculta ce/,/baga la cap/,/bagă la cap/,/implementează/,/implementeaza/,/aplică feedback/,/aplica feedback/])) add(good,"Este receptiv la feedback și implementează corecțiile.");
- if(has(t,[/rapid/,/repede/,/la timp/,/timp util/])) add(good,"Răspunde în timp util și gestionează bine ritmul conversațiilor.");
- if(has(t,[/follow.?up/,/zz/])) add(good,"Are follow-up-urile bine integrate în workflow.");
- if(has(t,[/taburi noi/,/tab nou/,/deschide.*tab/])) add(good,"Folosește tab-uri noi pentru a reveni mai ușor la fani.");
- if(has(t,[/mai sigur/,/sigur pe ea/,/sigur pe el/,/încreder/,/independent/,/singur[ăa]?/])) add(good,"Este mai sigur(ă) pe el/ea și începe să gestioneze singur(ă) mai multe situații.");
- if(has(t,[/priorit/,/plătitor/,/platitor/,/fan.*priorit/])) add(good,"Înțelege mai bine prioritizarea fanilor.");
- if(has(t,[/face gfe/,/face mult gfe/,/folosește gfe/,/foloseste gfe/,/bun pe gfe/,/are empatie/,/este empatic/,/personalizează bine/,/personalizeaza bine/])) add(good,"Folosește GFE/personalizarea pentru a construi conexiune cu fanii.");
- if(has(t,[/vânzar/,/vanzar/,/plăți/,/plati/,/ppv/,/obj/,/sales/]) && has(t,[/mai bine/,/descurc/,/înțelege/,/intelege/,/reuș/,/reus/,/sigur/])) add(good,"Se descurcă mai bine în zona de plăți și vânzări.");
- if(has(t,[/activitate/,/outreach/,/mesaje personalizate/])) add(good,"Creează activitate prin outreach și mesaje personalizate.");
- if(has(t,[/evoluție pozitivă/,/evolutie pozitiva/,/improvement/,/progres/,/mai ok/,/mai bine/])) add(good,"Se observă o evoluție pozitivă față de perioada anterioară.");
-
- if(has(t,[/panicheaz/,/se pierde/,/blocheaz/,/overwhelmed/,/multe mesaje/,/frica/,/teamă/,/teama/])) add(bad,"Are nevoie de mai multă consistență când volumul sau presiunea cresc.");
- if(has(t,[/empatie/,/gfe/,/creativitate/,/din cap/,/tranzacțional/,/tranzactional/])) add(bad,"Mai are de lucrat la empatie, GFE și o abordare mai naturală.");
- if(has(t,[/sales/,/vânzar/,/vanzar/,/vânzări/,/vanzari/]) && has(t,[/mai trebuie/,/lipsește/,/lipseste/,/ajut/,/lucrăm/,/lucram/,/nu.*deschide/])) add(bad,"Mai are nevoie de lucru pe zona de vânzări.");
- if(has(t,[/nu prea a fost activitate/,/inactiv/,/fără activitate/,/fara activitate/])) add(bad,"Trebuie să creeze mai multă activitate pe tură.");
- if(has(t,[/scam/,/scamming/])) add(bad,"Mai are nevoie de practică pe situațiile de SCAMMING.");
- if(has(t,[/manipul/])) add(bad,"Mai are nevoie de practică pe manipulare și gestionarea situațiilor dificile.");
- if(has(t,[/discount/,/reducere/])) add(bad,"Trebuie să evite folosirea discountului ca soluție rapidă.");
- if(has(t,[/flow/,/conversației/,/conversatiei/]) && has(t,[/fanul/,/fan/]) && has(t,[/control/,/direcț/,/direct/])) add(bad,"Trebuie să controleze mai bine direcția conversației.");
- if(has(t,[/dead end/,/fani complicați/,/fani complicati/,/situații dificile/,/situatii dificile/])) add(bad,"Mai are nevoie de practică în situațiile dificile și dead-end.");
- if(has(t,[/uită/,/uita/,/iese din conversații/,/iese din conversatii/])) add(bad,"Trebuie să își păstreze mai bine organizarea când schimbă conversațiile.");
- if(has(t,[/încet/,/mai greu/,/nevoie de timp/,/cu timpul/])) add(bad,"Are nevoie de timp și practică pentru a transforma skill-urile în reflex.");
-
- // If the source doesn't contain 3 distinct points, do NOT invent a new topic.
- // Reuse a source-backed point in a shorter form only when necessary.
- const sourceGood = good.slice();
- const sourceBad = bad.slice();
- while(good.length<3 && sourceGood.length) add(good,sourceGood[good.length % sourceGood.length]);
- while(bad.length<3 && sourceBad.length) add(bad,sourceBad[bad.length % sourceBad.length]);
- // Last resort: use direct, neutral wording tied to the actual observation sentences.
- while(good.length<3 && ss.length) add(good, cleanText(ss[good.length % ss.length]).replace(/[.!?]+$/,"."));
- while(bad.length<3 && ss.length) add(bad, cleanText(ss[bad.length % ss.length]).replace(/[.!?]+$/,"."));
- good=good.slice(0,3);bad=bad.slice(0,3);
-
- if(has(t,[/începe să fie/,/mai sigur/,/mai bine/,/improvement/,/progres/,/evoluție/,/evolutie/,/descurcă/,/descurca/])) add(actions,"Continuăm să consolidăm progresul observat în conversații reale.");
- if(has(t,[/panicheaz/,/multe mesaje/,/se pierde/,/uită/,/uita/])) add(actions,"Lucrăm pe organizare și prioritizare când volumul de mesaje crește.");
- if(has(t,[/sales/,/vânzar/,/vanzar/,/plăți/,/plati/,/ppv/,/obj/])) add(actions,"Aplicăm feedback-ul pe zona de vânzări în conversații reale.");
- if(has(t,[/gfe/,/empatie/,/creativ/])) add(actions,"Lucrăm pe empatie, GFE și răspunsuri mai naturale.");
- if(has(t,[/manipul/])) add(actions,"Continuăm practica pe manipulare și situații dificile.");
- if(has(t,[/scam/,/scamming/])) add(actions,"Continuăm practica pe situațiile de SCAMMING menționate.");
- if(has(t,[/dead end/,/fani complicați/,/fani complicati/])) add(actions,"Facem practice pe fanii complicați și situațiile de dead-end.");
- if(has(t,[/activitate/,/outreach/,/mesaje personalizate/])) add(actions,"Începem tura cu activitate și outreach personalizat.");
- while(actions.length<3){
-   const pool=bad.length?bad:good;
-   if(!pool.length) break;
-   add(actions,"Aplicăm în conversații reale: "+pool[(actions.length)%pool.length]);
- }
- actions=actions.slice(0,3);
-
- let overall,progress,compare="";
- if(!prev){progress="FIRST SHADOWING";overall="Evaluarea oferă un punct clar de plecare pentru următoarea evaluare."}
- else{
-   progress="FOLLOW-UP SHADOWING";
-   const pos=has(t,[/mai bine/,/improvement/,/progres/,/evolu/,/mai sigur/,/mai ok/,/mai bine/]);
-   const neg=has(t,[/mai rău/,/mai rau/,/regres/,/stagne/,/nu a progres/,/aceleași probleme/,/aceleasi probleme/]);
-   if(pos&&!neg){overall="Se observă improvement față de feedback-ul anterior.";compare="Improvement menționat față de evaluarea anterioară."}
-   else if(neg){overall="Sunt aspecte care încă necesită lucru și urmărire.";compare="Problemele menționate anterior necesită în continuare atenție."}
-   else{overall="Skill-urile sunt în dezvoltare; următoarea evaluare va arăta consistența.";compare="Urmărim dacă observațiile de azi devin constante."}
- }
-
- let out=`SHADOWING FEEDBACK\n\nNume: ${name}\nEchipă: ${team}\nData: ${date}\n\nOverall:\n${overall}\n\n📈 Progress: ${progress}\n\n✅ Puncte bune\n• ${good.join("\n• ")}\n\n⚠️ De îmbunătățit\n• ${bad.join("\n• ")}\n\n🎯 Action Point\n• ${actions.join("\n• ")}`;
- if(potential)out+=`\n\n💰 Potential:\n• Target: ${potential}, în funcție de consistență și progres.`;
- generated=out;generatedCompare=compare;
- document.getElementById("result").textContent=out;
- document.getElementById("status").textContent=prev?"Feedback-ul ține cont doar de observațiile tale și de evaluarea anterioară.":"Primul feedback pentru acest chatter.";
- renderTeams();renderProfiles();renderTimeline();
+  const name=val("name"),team=val("team"),notes=val("notes"),date=val("date")||today(),potential=val("potential");
+  if(!name||!team||!notes){setStatus("Completează numele, echipa și observațiile.");return}
+  const p=profile(name,team);if(!p){setStatus("Adaugă mai întâi chatter-ul în echipă din butonul +.");return}
+  currentId=p.id;
+  const lines=sentences(notes);
+  const positives=[],improvements=[],actions=[];
+  for(const line of lines){
+    const low=line.toLowerCase();
+    // We only classify a sentence when its own wording clearly indicates it.
+    if(/bun|bine|calumea|pozitiv|sigur|încreder|descurc|evolu|progres|receptiv|ajutat|ușor|usor|mai puțin ajutor|mai putin ajutor|singur|singură|singura|sigură|sigura|direcție bună|directie buna|foarte bun|mai bine/.test(low)) positives.push(line);
+    if(/rău|rau|problem|panicheaz|se pierde|uită|uita|nu reuș|nu reus|nevoie de|mai trebuie|dead end|complicat|dificil|greș|gres|lipsește|lipseste|mai puțin|mai putin|nu poate|nu știe|nu stie/.test(low)) improvements.push(line);
+    if(/trebuie|nevoie de|continu|lucr|ajut|practice|practică|practica|învăț|invat|corect|urmăr|urmar|cu timpul/.test(low)) actions.push(line);
+  }
+  const unique=a=>[...new Set(a)];
+  const good=unique(positives).slice(0,4), bad=unique(improvements).slice(0,4), act=unique(actions).slice(0,4);
+  let overall="Evaluarea reflectă strict observațiile introduse pentru această sesiune.";
+  if(/mai bine|progres|evolu|mai sigur|mai puțin ajutor|mai putin ajutor|direcție bună|directie buna/.test(notes.toLowerCase())) overall="Din observațiile introduse reiese o direcție pozitivă în aspectele menționate.";
+  else if(/mai rău|mai rau|regres|stagne/.test(notes.toLowerCase())) overall="Din observațiile introduse reiese o direcție negativă în aspectele menționate.";
+  let progress=p.feedbacks.length?"FOLLOW-UP SHADOWING":"FIRST SHADOWING";
+  let out=`SHADOWING FEEDBACK\n\nNume: ${name}\nEchipă: ${team}\nData: ${date}\n\nOverall:\n${overall}\n\n📈 Progress: ${progress}\n\n`;
+  if(good.length)out+=`✅ Puncte bune\n• ${good.join("\n• ")}\n\n`;
+  if(bad.length)out+=`⚠️ De îmbunătățit\n• ${bad.join("\n• ")}\n\n`;
+  if(act.length)out+=`🎯 Action Point\n• ${act.join("\n• ")}\n`;
+  if(!good.length&&!bad.length&&!act.length)out+=`📝 Observații\n• ${lines.join("\n• ")}\n`;
+  if(potential)out+=`\n💰 Potential:\n• Target: ${potential}`;
+  generated=out;document.getElementById("result").textContent=out;setStatus("Generatorul folosește exclusiv textul introdus de tine. Nu completează cu informații externe.");renderAll();
 }
 
+function reviewFromThree(fs){
+  const notes=fs.map(f=>f.notes||"").filter(Boolean);
+  const joined=notes.join(" ").toLowerCase();
+  const positive=notes.flatMap(sentences).filter(x=>/mai bine|progres|evolu|mai sigur|mai puțin ajutor|mai putin ajutor|direcție bună|directie buna|pozitiv|descurc/.test(x.toLowerCase()));
+  const negative=notes.flatMap(sentences).filter(x=>/mai rău|mai rau|regres|stagne|panicheaz|se pierde|uită|uita|problem|nevoie de|mai trebuie|dead end|dificil|complicat/.test(x.toLowerCase()));
+  let trend="🟡 STABLE",cls="neutral",summary="Cele 3 feedback-uri nu conțin suficiente formulări comparative clare pentru a declara o direcție.";
+  if(/mai rău|mai rau|regres|stagne/.test(joined) && !/mai bine|progres|evolu|mai sigur/.test(joined)){trend="🔴 NEEDS ATTENTION";cls="badtxt";summary="În cele 3 feedback-uri sunt menționate semnale negative explicite."}
+  else if(/mai bine|progres|evolu|mai sigur|mai puțin ajutor|mai putin ajutor/.test(joined) && !/mai rău|mai rau|regres|stagne/.test(joined)){trend="🟢 IMPROVING";cls="goodtxt";summary="În cele 3 feedback-uri sunt menționate semnale explicite de progres."}
+  return {trend,cls,summary,positive,negative};
+}
 function renderProgressReview(p){
- const box=document.getElementById("progressReview");
- if(!p || p.feedbacks.length<3){box.innerHTML="";return}
- const fs=[...p.feedbacks].sort((a,b)=>a.date.localeCompare(b.date)).slice(-3);
- const texts=fs.map(f=>f.notes||"").join(" ").toLowerCase();
- const pos=(texts.match(/mai bine|improvement|progres|evolu|mai sigur|mai ok|descurc/g)||[]).length;
- const neg=(texts.match(/mai rău|mai rau|regres|stagne|aceleași probleme|aceleasi probleme|panicheaz|se pierde|blocheaz/g)||[]).length;
- let trend="🟡 STABLE", cls="neutral", summary="Nu există suficiente semnale clare pentru o direcție.";
- if(pos>neg){trend="🟢 IMPROVING";cls="goodtxt";summary="În ultimele 3 feedback-uri apar mai multe semnale de progres decât de regres."}
- else if(neg>pos){trend="🔴 NEEDS ATTENTION";cls="badtxt";summary="În ultimele 3 feedback-uri apar mai multe probleme recurente decât semnale de progres."}
- const dates=fs.map(f=>f.date).join(" → ");
- box.innerHTML=`<div class="review"><h3>📊 Progress Review — ultimele 3 feedback-uri</h3><div class="trend ${cls}">${trend}</div><div class="reviewnote">${esc(summary)}<br>Perioadă: ${esc(dates)}</div><div class="reviewgrid"><div class="reviewitem"><b>Ce se repetă pozitiv</b>${esc(extractReviewPhrase(fs,true)||"Nu este menționat clar.")}</div><div class="reviewitem"><b>Ce se repetă negativ</b>${esc(extractReviewPhrase(fs,false)||"Nu este menționat clar.")}</div></div><div class="reviewnote">Analiza folosește exclusiv observațiile salvate în cele 3 feedback-uri. Nu adaugă skill-uri sau probleme care nu au fost menționate.</div></div>`;
-}
-function extractReviewPhrase(fs,positive){
- const all=fs.flatMap(f=>sentences(f.notes||""));
- const pats=positive?[/mai bine/i,/improvement/i,/progres/i,/evolu/i,/mai sigur/i,/receptiv/i,/descurc/i]:[/panicheaz/i,/se pierde/i,/blocheaz/i,/mai greu/i,/nevoie de/i,/lipsește/i,/lipseste/i,/problem/i,/trebuie/i];
- const hits=all.filter(x=>pats.some(r=>r.test(x)));
- if(!hits.length)return "";
- return hits.slice(0,2).map(x=>x.replace(/[.!?]+$/,".")).join(" ");
-}
-function saveFeedback(){
- if(!generated){document.getElementById("status").textContent="Generează întâi feedback-ul.";return}
- const name=val("name"),team=val("team"),date=val("date")||today();
- let p=profile(name,team);
- if(!p){p={id:uid(),name,team,feedbacks:[]};data.profiles.push(p);currentId=p.id}
- if(!data.teams.includes(team))data.teams.push(team);
- const existing=p.feedbacks.find(f=>f.date===date);
- if(existing){if(!confirm("Există deja un feedback pentru această dată. Îl înlocuiești?"))return;Object.assign(existing,{result:generated,notes:val("notes"),potential:val("potential"),compare:generatedCompare})}
- else p.feedbacks.push({id:uid(),date,result:generated,notes:val("notes"),potential:val("potential"),compare:generatedCompare});
- persist();renderTeams();renderProfiles();renderTimeline();document.getElementById("status").textContent="Feedback salvat în istoricul chatter-ului.";
+  const box=document.getElementById("progressReview");if(!p||p.feedbacks.length<3){box.innerHTML="";return}
+  const fs=[...p.feedbacks].sort((a,b)=>a.date.localeCompare(b.date)).slice(-3),r=reviewFromThree(fs),dates=fs.map(f=>f.date).join(" → ");
+  const pos=r.positive.slice(0,2).join(" ")||"Nu este menționat clar în cele 3 feedback-uri.";
+  const neg=r.negative.slice(0,2).join(" ")||"Nu este menționat clar în cele 3 feedback-uri.";
+  box.innerHTML=`<div class="review"><h3>📊 Progress Review — ultimele 3 feedback-uri</h3><div class="trend ${r.cls}">${r.trend}</div><div class="reviewnote">${esc(r.summary)}<br>Perioadă: ${esc(dates)}</div><div class="reviewgrid"><div class="reviewitem"><b>Semnale pozitive găsite</b>${esc(pos)}</div><div class="reviewitem"><b>Semnale negative găsite</b>${esc(neg)}</div></div><div class="reviewnote">Review-ul este calculat exclusiv din observațiile scrise în aceste 3 feedback-uri. Dacă ceva nu a fost menționat, nu este inventat.</div></div>`;
 }
 
-function copyResult(){if(!generated)return;navigator.clipboard.writeText(generated).then(()=>document.getElementById("status").textContent="Copiat.")}
-function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-function escAttr(s){return String(s).replace(/\\/g,"\\\\").replace(/'/g,"\\'")}
-renderTeams();renderProfiles();
+async function saveFeedback(){
+  if(!sb){setStatus("Supabase nu este configurat în index.html.");return}
+  if(!generated){setStatus("Generează întâi feedback-ul.");return}
+  let p=getCurrent(),name=val("name"),team=val("team"),date=val("date")||today();
+  if(!p){setStatus("Selectează chatter-ul din stânga înainte să salvezi feedback-ul.");return}
+  if(p.name!==name||p.team!==team){const ok=await saveProfileTeam();if(!ok)return;p=getCurrent()}
+  const teamId=p.teamId||await getTeamId(p.team);if(!teamId)return;
+  const payload={chatter_id:p.id,team_id:teamId,feedback_date:date,observations:val("notes"),generated_feedback:generated};
+  const existing=p.feedbacks.find(f=>f.date===date);
+  let error=null;
+  if(existing){
+    if(!confirm("Există deja un feedback pentru această dată. Îl înlocuiești?"))return;
+    // Existing table has no id column, so update by chatter + date.
+    ({error}=await sb.from("feedbacks").update(payload).eq("chatter_id",p.id).eq("feedback_date",date));
+  } else {
+    ({error}=await sb.from("feedbacks").insert(payload));
+  }
+  if(error){setStatus("Eroare la salvare: "+error.message);return}
+  await loadRemote();currentId=p.id;renderAll();
+  const fresh=getCurrent();
+  if(fresh&&fresh.feedbacks.length>=3&&fresh.feedbacks.length%3===0){setStatus("Feedback salvat. Ai ajuns la un grup complet de 3 — Progress Review-ul apare automat mai jos.");}
+  else setStatus("Feedback salvat în Supabase și sincronizat pentru toată echipa.");
+}
+function copyResult(){if(!generated)return;navigator.clipboard.writeText(generated).then(()=>setStatus("Copiat."))}
+function renderTimeline(){
+  const p=getCurrent(),box=document.getElementById("timeline");
+  if(!p){document.getElementById("timelineTitle").textContent="Istoric chatter";document.getElementById("timelineCount").textContent="";document.getElementById("progressReview").innerHTML="";box.innerHTML='<div class="empty">Selectează un chatter din stânga.</div>';return}
+  document.getElementById("timelineTitle").textContent=`${esc(p.name)} — ${esc(p.team)}`;document.getElementById("timelineCount").textContent=`${p.feedbacks.length} evaluări`;renderProgressReview(p);
+  if(!p.feedbacks.length){box.innerHTML='<div class="empty">Nu există feedback-uri încă.</div>';return}
+  const fs=[...p.feedbacks].sort((a,b)=>b.date.localeCompare(a.date));
+  box.innerHTML=fs.map((f,i)=>`<div class="entry"><div class="entryhead"><b>${esc(f.date)}</b><span>${i===fs.length-1?'FIRST / oldest':''}</span></div><div class="entrybody"><pre>${esc(f.result||f.notes)}</pre></div></div>`).join("");
+}
+
+window.addEventListener("beforeunload",()=>{try{localStorage.setItem("QC_SHADOWING_LAST_OPEN","1")}catch(e){}});
+init();
 </script>
 </body>
 </html>
